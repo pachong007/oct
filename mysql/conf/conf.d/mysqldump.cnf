@@ -1,0 +1,5 @@
+[mysqldump]
+quick
+max_allowed_packet	= 16M
+user = root
+password = 123456
