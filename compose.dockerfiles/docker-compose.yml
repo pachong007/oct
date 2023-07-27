@@ -5,7 +5,7 @@ services:
     container_name: "mydb"
     restart: always
     ports:
-      - "3306:3306"
+      - "13306:3306"
     volumes:
       - ./../../server/mysql/conf:/etc/mysql
       - ./../../server/mysql/data:/var/lib/mysql
@@ -19,7 +19,7 @@ services:
     container_name: "myredis"
     restart: always
     ports:
-      - "6379:6379"
+      - "16379:6379"
     volumes:
       - ./../../server/redis:/data
     networks:
@@ -29,7 +29,7 @@ services:
     container_name: "myphp"
     restart: always
     ports:
-      - "9000:9000"
+      - "19000:9000"
     volumes:
       - ./../../server/www:/var/www/html
       - ./../../server/php/php.ini:/usr/local/etc/php/php.ini
@@ -46,8 +46,7 @@ services:
     container_name: "mynginx"
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - "180:80"
     volumes:
       - ./../../server/www:/usr/share/nginx/html
       - ./../../server/nginx:/etc/nginx
