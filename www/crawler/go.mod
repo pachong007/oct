@@ -18,7 +18,7 @@ require (
 	github.com/tebeka/selenium v0.9.9
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/tidwall/gjson v1.14.4
-	github.com/ydtg1993/ant v1.1.3
+	github.com/ydtg1993/ant v1.1.5
 	golang.org/x/net v0.5.0 // indirect
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/gorm v1.24.3
