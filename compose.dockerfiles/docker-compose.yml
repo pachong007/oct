@@ -62,7 +62,6 @@ services:
       - ./../../server/www/crawler:/home/comics
     environment:
       SOURCE_URL: "www.1kkk.com"
-    network_mode: "host"
     shm_size: '100gb'
     networks:
       - myserver_v1
