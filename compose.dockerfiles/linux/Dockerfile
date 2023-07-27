@@ -17,7 +17,7 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 
 VOLUME [ "/sys/fs/cgroup" ]
 CMD ["/usr/sbin/init"]
-COPY /chrome.rpm  /home/chrome.rpm
+COPY chrome.rpm  /home/chrome.rpm
 
 RUN yum -y install /home/chrome.rpm
 
