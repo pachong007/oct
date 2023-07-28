@@ -93,7 +93,7 @@ EOF
         $grid->filter(function ($filter) {
             $filter->like('title', '标题');
             $filter->equal('region', '地区查询');
-            $filter->equal('source', '采集源')->select([1 => '快看', 2 => '腾讯']);
+            $filter->equal('source', '采集源')->select([1 => 'kkk']);
             $filter->equal('is_free', '付费状态')->select([0 => '免费', 1 => '收费']);
             $filter->equal('is_finish', '连载状态')->select([0 => '连载中', 1 => '完结']);
             $filter->equal('status', '审核状态')->select([0 => '待审核', 1 => '通过',2=>'待处理']);

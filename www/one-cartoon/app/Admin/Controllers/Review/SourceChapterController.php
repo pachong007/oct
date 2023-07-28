@@ -77,7 +77,7 @@ class SourceChapterController extends AdminController
         $grid->filter(function ($filter) {
             $filter->equal('comic_id', '漫画id');
             $filter->like('title', '标题');
-            $filter->equal('source', '采集源')->select([1 => '快看', 2 => '腾讯']);
+            $filter->equal('source', '采集源')->select([1 => 'kkk']);
             $filter->equal('is_free', '付费状态')->select([0 => '免费', 1 => '收费']);
             $filter->equal('status', '审核状态')->select([0 => '待审核', 1 => '通过']);
             $filter->where(function ($query) {
