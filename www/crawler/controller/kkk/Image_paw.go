@@ -12,6 +12,7 @@ import (
 	"github.com/ydtg1993/ant"
 	"math"
 	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -216,6 +217,7 @@ outLoop:
 
 func downImages(A *ant.Ant, sourceChapter *model.SourceChapter, sourceImage *model.SourceImage, dir string) {
 	imgCount := len(sourceImage.SourceData)
+	fmt.Println("ccccc" + strconv.Itoa(imgCount))
 	if imgCount == 0 {
 		return
 	}
