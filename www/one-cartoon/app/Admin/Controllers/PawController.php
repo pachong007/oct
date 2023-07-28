@@ -150,7 +150,6 @@ function triggerStop(dom,source,cache) {
   })
 }
 triggerStop(document.getElementById('stop-kk'),'kk','{$this->StopRobotSignal}');
-triggerStop(document.getElementById('stop-tx'),'tx','{$this->StopRobotSignal}');
 </script>
 EOF
                 );
@@ -177,7 +176,6 @@ function triggerReset(dom,source,cache) {
   })
 }
 triggerReset(document.getElementById('reset-comic-kk'),'kk','{$this->SourceComicRetryTask}');
-triggerReset(document.getElementById('reset-chapter-kk'),'kk','{$this->SourceChapterRetryTask}');
 </script>
 EOF
                 );
