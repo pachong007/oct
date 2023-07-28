@@ -39,17 +39,16 @@ class Run extends Command
      */
     public function handle()
     {
-        DB::statement("
-ALTER TABLE source_chapter ADD COLUMN `view_type` TINYINT ( 1 ) NOT NULL DEFAULT '0' COMMENT '0条漫 1页漫';
-        ");
+        $this->dataInsert();
     }
 
     private function dataInsert()
     {
         DB::statement("
+DROP TABLE IF EXISTS `source_comic`;
 CREATE TABLE `source_comic` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `import_comic_id` int(11) NOT NULL DEFAULT '0',
+  `sid` int(11) NOT NULL DEFAULT '0',
   `source` tinyint(1) NOT NULL DEFAULT '1' COMMENT '采集源 1:快看 2:腾讯',
   `source_id` int(11) NOT NULL COMMENT '源漫画id',
   `source_url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '源url',
@@ -71,19 +70,20 @@ CREATE TABLE `source_comic` (
   `retry` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0默认 1重抓',
   `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0未审核 1通过',
   `last_chapter_update_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最新章节更新时间',
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `cover_h` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '横板封面',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `source_id` (`source`,`source_id`) USING BTREE,
-  UNIQUE KEY `source_uri` (`source_url`) USING BTREE,
-  UNIQUE KEY `import_comic_id` (`import_comic_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=8423 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画';
+  UNIQUE KEY `source_uri` (`source_url`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=15936 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画';
 ");
         DB::statement("
+DROP TABLE IF EXISTS `source_chapter`;
 CREATE TABLE `source_chapter` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `import_comic_id` int(11) NOT NULL DEFAULT '0',
-  `import_chapter_id` int(11) NOT NULL DEFAULT '0',
+  `sid` int(11) NOT NULL DEFAULT '0',
+  `scid` int(11) NOT NULL DEFAULT '0',
   `comic_id` int(11) NOT NULL,
   `source` tinyint(1) NOT NULL DEFAULT '1' COMMENT '采集源 1:快看 2:腾讯',
   `source_chapter_id` int(11) NOT NULL COMMENT '源章节id',
@@ -95,36 +95,34 @@ CREATE TABLE `source_chapter` (
   `source_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0未审核 1通过',
   `retry` tinyint(1) NOT NULL DEFAULT '0',
+  `view_type` TINYINT (1) NOT NULL DEFAULT '0' COMMENT '0条漫 1页漫'
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `source` (`source`,`comic_id`,`source_url`) USING BTREE,
-  UNIQUE KEY `import_chapter_id` (`import_chapter_id`) USING BTREE,
-  KEY `comic_id` (`comic_id`) USING BTREE,
-  KEY `import_comic_id` (`import_comic_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=126451 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画章节';
+  KEY `comic_id` (`comic_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=258616 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画章节';
         ");
 
         DB::statement("
+DROP TABLE IF EXISTS `source_image`;
 CREATE TABLE `source_image` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `import_comic_id` int(11) NOT NULL DEFAULT '0',
-  `import_chapter_id` int(11) NOT NULL DEFAULT '0',
   `source` tinyint(1) DEFAULT '0' COMMENT '采集源 1:快看 2:腾讯',
   `comic_id` int(11) NOT NULL DEFAULT '0',
   `chapter_id` int(11) NOT NULL,
   `images` json NOT NULL,
-  `images_list` json NOT NULL,
+  `source_data` json NOT NULL,
   `state` tinyint(1) NOT NULL DEFAULT '0' COMMENT '资源获取:0未开始 1已完成',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `chapter_id` (`chapter_id`) USING BTREE,
-  UNIQUE KEY `import_chapter_id` (`import_chapter_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=126386 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+  UNIQUE KEY `chapter_id` (`chapter_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=363 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
         ");
 
         DB::statement("
+DROP TABLE IF EXISTS `fail_info`;
 CREATE TABLE `fail_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `source` tinyint(1) NOT NULL DEFAULT '1' COMMENT '采集源 1:快看 2:腾讯',
