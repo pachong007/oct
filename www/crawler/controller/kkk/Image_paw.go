@@ -279,6 +279,9 @@ func browserList(A *ant.Ant, sourceImage *model.SourceImage, sourceChapter *mode
 	for tryLimit := 0; tryLimit <= 9; tryLimit++ {
 		imgList, err := A.WebDriver.FindElements(selenium.ByClassName, "load-src")
 		fmt.Println(imgList)
+		box, _ := A.WebDriver.FindElement(selenium.ByID, "barChapterc")
+		b, _ := box.GetAttribute("innerHTML")
+		fmt.Println(b)
 		if err != nil {
 			if tryLimit > 5 {
 				if tryLimit == 9 {
@@ -301,11 +304,12 @@ func browserList(A *ant.Ant, sourceImage *model.SourceImage, sourceChapter *mode
 				sourceImage.SourceData = append(sourceImage.SourceData, img)
 			}
 		}
-		fmt.Println(sourceImage.SourceData)
 		if len(sourceImage.SourceData) > 0 {
 			return
 		}
 		A.WebDriver.Refresh()
 		A.WebDriver.Get(sourceChapter.SourceUrl)
+		t := time.NewTicker(time.Second * 10)
+		<-t.C
 	}
 }
