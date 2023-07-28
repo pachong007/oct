@@ -38,6 +38,7 @@ func ImagePaw() {
 			continue
 		}
 		A.WebDriver.Get(sourceChapter.SourceUrl)
+		closeAds(A)
 		Mode := 0
 		pageDom, err := A.WebDriver.FindElement(selenium.ByClassName, "view-paging")
 		if err == nil {
@@ -72,6 +73,10 @@ func ImagePaw() {
 		} else {
 			downImages2(A, sourceChapter, sourceImage, dir)
 		}
+		if len(sourceImage.Images) == 0 {
+			rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
+			continue
+		}
 		err = orm.Eloquent.Save(sourceImage).Error
 		if err != nil {
 			msg := fmt.Sprintf("图片数据修改失败 source = %d comic_id = %d chapter_id = %d err = %s",
@@ -83,6 +88,14 @@ func ImagePaw() {
 			rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			continue
 		}
+	}
+}
+
+func closeAds(A *ant.Ant) {
+	xpath := "//a[@href='javascript:void(0);' and @onclick=\"$('#lb-win').hide();$('body').css('overflow', 'auto');\"]"
+	element, err := A.WebDriver.FindElement(selenium.ByXPATH, xpath)
+	if err == nil {
+		element.Click()
 	}
 }
 
@@ -153,6 +166,7 @@ outLoop:
 			}
 			if err != nil {
 				A.WebDriver.Refresh()
+				closeAds(A)
 				continue
 			}
 			src, _ := img.GetAttribute("src")
@@ -167,6 +181,7 @@ outLoop:
 			nextButton, err := A.WebDriver.FindElement(selenium.ByXPATH, "//a[@class='block' and contains(@href, 'javascript:ShowNext();')]")
 			if err != nil {
 				A.WebDriver.Refresh()
+				closeAds(A)
 				continue
 			}
 			nextButton.Click()
@@ -300,5 +315,6 @@ func browserList(A *ant.Ant, sourceImage *model.SourceImage, sourceChapter *mode
 		}
 		A.WebDriver.Refresh()
 		A.WebDriver.Get(sourceChapter.SourceUrl)
+		closeAds(A)
 	}
 }

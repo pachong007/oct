@@ -37,7 +37,7 @@ func TaskReComic(source *SourceStrategy) {
 }
 
 func TaskChapter(source *SourceStrategy) {
-	t := time.NewTicker(time.Minute * 5)
+	t := time.NewTicker(time.Second * 5)
 	defer t.Stop()
 	threads := 2
 	for {
