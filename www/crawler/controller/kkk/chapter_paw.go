@@ -127,7 +127,6 @@ func ChapterPaw() {
 			})
 
 			bot.OnHTML("div.banner_detail_form", func(e *colly.HTMLElement) {
-				title := e.DOM.Find("p.title").Text()
 				sourceComic.Cover, _ = e.DOM.Find(".cover>img").Attr("src")
 				var cookies map[string]string
 				dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d/%d", config.Spe.SourceId, sourceComic.Id%128)
@@ -154,7 +153,6 @@ func ChapterPaw() {
 				}
 				sourceComic.Author = author
 				sourceComic.Description = description
-				sourceComic.Title = title
 				sourceComic.SourceData, _ = e.DOM.Html()
 				var total int64
 				orm.Eloquent.Model(model.SourceChapter{}).Where("comic_id = ?", sourceComic.Id).Count(&total)
