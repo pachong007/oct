@@ -98,7 +98,6 @@ class ticker {
     }
 }
 new ticker('kk','kk','{$this->TaskStepRecord}');
-new ticker('tx','tx','{$this->TaskStepRecord}');
 </script>
 EOF
                 );
@@ -178,31 +177,21 @@ function triggerReset(dom,source,cache) {
   })
 }
 triggerReset(document.getElementById('reset-comic-kk'),'kk','{$this->SourceComicRetryTask}');
-triggerReset(document.getElementById('reset-comic-tx'),'tx','{$this->SourceComicRetryTask}');
 triggerReset(document.getElementById('reset-chapter-kk'),'kk','{$this->SourceChapterRetryTask}');
-triggerReset(document.getElementById('reset-chapter-tx'),'tx','{$this->SourceChapterRetryTask}');
 </script>
 EOF
                 );
                 $row->column(3, function (Column $column) {
-                    $column->append((new Box("快看爬虫进程",
+                    $column->append((new Box("kkk爬虫进程",
                         "<btn class='btn btn-danger btn-sm' id='stop-kk'>停止</btn>
 <table id='kk' class='table table-hover grid-table'><tbody></tbody></table>")));
-                    $column->append((new Box("腾讯爬虫进程",
-                        "<btn class='btn btn-danger btn-sm' id='stop-tx'>停止</btn>
-<table id='tx' class='table table-hover grid-table'><tbody></tbody></table>")));
                 });
 
                 $row->column(9, function (Column $column) {
-                    $column->append((new Box("快看爬虫任务",
+                    $column->append((new Box("kkk爬虫任务",
                         "<btn class='btn btn-info btn-sm' id='reset-comic-kk'>错误漫画任务重置</btn>
 <btn class='btn btn-info btn-sm' id='reset-chapter-kk'>错误章节任务重置</btn>
 <table id='kk_task' class='table table-hover grid-table'><tbody></tbody></table>"))
-                        ->style('primary'));
-                    $column->append((new Box("腾讯爬虫任务",
-                        "<btn class='btn btn-info btn-sm' id='reset-comic-tx'>错误漫画任务重置</btn>
-<btn class='btn btn-info btn-sm' id='reset-chapter-tx'>错误章节任务重置</btn>
-<table id='tx_task' class='table table-hover grid-table'><tbody></tbody></table>"))
                         ->style('primary'));
                 });
             });

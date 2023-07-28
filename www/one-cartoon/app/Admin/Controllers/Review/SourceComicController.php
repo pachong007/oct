@@ -57,9 +57,7 @@ class SourceComicController extends AdminController
         $grid->column('source', '采集源')->display(function ($v) {
             $source_url = $this->source_url;
             if ($v == 1) {
-                return "<a href='$source_url' target='_blank'>快看</a>";
-            } else {
-                return "<a href='$source_url' target='_blank'>腾讯</a>";
+                return "<a href='$source_url' target='_blank'>kkk</a>";
             }
         });
         $grid->column('chapter_count', '章节数量');
