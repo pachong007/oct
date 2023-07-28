@@ -156,7 +156,7 @@ outLoop:
 				continue
 			}
 			src, _ := img.GetAttribute("src")
-			if containsString(sourceImage.SourceData, src) == true {
+			if containsString(sourceImage.SourceData, src) == false {
 				sourceImage.SourceData = append(sourceImage.SourceData, src)
 			} else {
 				repeat--
