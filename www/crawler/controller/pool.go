@@ -37,9 +37,9 @@ func TaskReComic(source *SourceStrategy) {
 }
 
 func TaskChapter(source *SourceStrategy) {
-	t := time.NewTicker(time.Second * 30)
+	t := time.NewTicker(time.Minute * 5)
 	defer t.Stop()
-	threads := 2
+	threads := 5
 	for {
 		<-t.C
 		wg := sync.WaitGroup{}
@@ -87,7 +87,7 @@ func TaskChapterUpdate() {
 func TaskImage(source *SourceStrategy) {
 	for {
 		timestamp0 := time.Now()
-		threads := 2
+		threads := 10
 		wg := sync.WaitGroup{}
 		wg.Add(threads)
 		for i := 0; i < threads; i++ {
