@@ -44,8 +44,8 @@ class Run extends Command
 
     private function dataInsert()
     {
+        DB::statement("DROP TABLE IF EXISTS `source_comic`;");
         DB::statement("
-DROP TABLE IF EXISTS `source_comic`;
 CREATE TABLE `source_comic` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sid` int(11) NOT NULL DEFAULT '0',
@@ -78,8 +78,9 @@ CREATE TABLE `source_comic` (
   UNIQUE KEY `source_uri` (`source_url`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=15936 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画';
 ");
+
+        DB::statement("DROP TABLE IF EXISTS `source_chapter`;");
         DB::statement("
-DROP TABLE IF EXISTS `source_chapter`;
 CREATE TABLE `source_chapter` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sid` int(11) NOT NULL DEFAULT '0',
@@ -104,6 +105,7 @@ CREATE TABLE `source_chapter` (
 ) ENGINE=InnoDB AUTO_INCREMENT=258616 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画章节';
         ");
 
+        DB::statement("DROP TABLE IF EXISTS `source_image`;");
         DB::statement("
 DROP TABLE IF EXISTS `source_image`;
 CREATE TABLE `source_image` (
@@ -121,8 +123,8 @@ CREATE TABLE `source_image` (
 ) ENGINE=InnoDB AUTO_INCREMENT=363 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
         ");
 
+        DB::statement("DROP TABLE IF EXISTS `fail_info`;");
         DB::statement("
-DROP TABLE IF EXISTS `fail_info`;
 CREATE TABLE `fail_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `source` tinyint(1) NOT NULL DEFAULT '1' COMMENT '采集源 1:快看 2:腾讯',
