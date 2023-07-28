@@ -137,10 +137,6 @@ func containsString(slice []string, str string) bool {
 }
 
 func downImages2(A *ant.Ant, sourceChapter *model.SourceChapter, sourceImage *model.SourceImage, dir string) {
-	nextButton, err := A.WebDriver.FindElement(selenium.ByXPATH, "//a[@class='block' and contains(@href, 'javascript:ShowNext();')]")
-	if err != nil {
-		return
-	}
 	repeat := 3
 outLoop:
 	for {
@@ -160,7 +156,7 @@ outLoop:
 				continue
 			}
 			src, _ := img.GetAttribute("src")
-			if containsString(sourceImage.SourceData, src) == false {
+			if containsString(sourceImage.SourceData, src) == true {
 				sourceImage.SourceData = append(sourceImage.SourceData, src)
 			} else {
 				repeat--
@@ -168,8 +164,14 @@ outLoop:
 					break outLoop
 				}
 			}
+			nextButton, err := A.WebDriver.FindElement(selenium.ByXPATH, "//a[@class='block' and contains(@href, 'javascript:ShowNext();')]")
+			if err != nil {
+				A.WebDriver.Refresh()
+				continue
+			}
 			nextButton.Click()
-			time.Sleep(1 * time.Second)
+			t := time.NewTicker(time.Second * 1)
+			<-t.C
 			break
 		}
 	}
