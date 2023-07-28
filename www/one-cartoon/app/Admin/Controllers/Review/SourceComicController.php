@@ -40,15 +40,6 @@ class SourceComicController extends AdminController
             }
             return "<div style='width:100px;height:60px'><img data-src='{$url}' class='cover img img-thumbnail' style='max-width:100px;height: 100%;' /></div>";
         });
-        Admin::script("_component.imgDelay('.cover2',{zoom:true});");
-        $grid->column('cover_h', '横板封面')->display(function ($v) {
-            if (preg_match("/^http/", $v)) {
-                $url = $v;
-            } else {
-                $url = env('IMG_DOMAIN') . '/' . $v;
-            }
-            return "<div style='width:100px;height:60px'><img data-src='{$url}' class='cover2 img img-thumbnail' style='max-width:100px;height: 100%;' /></div>";
-        });
         $grid->column('status', '审核')->using([0 => '待审核', 1 => '通过',2=>'待处理',3=>'同名暂存'])->dot([0 => 'info', 1 => 'success',2=>'warning',3=>'danger']);
         $grid->column('category', '分类');
         $grid->column('region', '地区');
