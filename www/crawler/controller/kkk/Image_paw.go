@@ -278,8 +278,8 @@ func down(A *ant.Ant, imgs []string, dir, ext string, add int) (files []string, 
 func browserList(A *ant.Ant, sourceImage *model.SourceImage, sourceChapter *model.SourceChapter) {
 	for tryLimit := 0; tryLimit <= 9; tryLimit++ {
 		imgList, err := A.WebDriver.FindElements(selenium.ByClassName, "load-src")
-		fmt.Println(imgList)
-		box, err := A.WebDriver.FindElement(selenium.ByID, "barChapter")
+		fmt.Println(imgList, sourceChapter.SourceUrl)
+		box, err := A.WebDriver.FindElement(selenium.ByTagName, "body")
 		if err == nil {
 			b, _ := box.GetAttribute("innerHTML")
 			fmt.Println(b)
