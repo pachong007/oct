@@ -279,9 +279,11 @@ func browserList(A *ant.Ant, sourceImage *model.SourceImage, sourceChapter *mode
 	for tryLimit := 0; tryLimit <= 9; tryLimit++ {
 		imgList, err := A.WebDriver.FindElements(selenium.ByClassName, "load-src")
 		fmt.Println(imgList)
-		box, _ := A.WebDriver.FindElement(selenium.ByID, "barChapterc")
-		b, _ := box.GetAttribute("innerHTML")
-		fmt.Println(b)
+		box, err := A.WebDriver.FindElement(selenium.ByID, "barChapter")
+		if err == nil {
+			b, _ := box.GetAttribute("innerHTML")
+			fmt.Println(b)
+		}
 		if err != nil {
 			if tryLimit > 5 {
 				if tryLimit == 9 {
