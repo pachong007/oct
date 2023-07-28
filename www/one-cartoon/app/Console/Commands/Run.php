@@ -106,7 +106,6 @@ CREATE TABLE `source_chapter` (
 
         DB::statement("DROP TABLE IF EXISTS `source_image`;");
         DB::statement("
-DROP TABLE IF EXISTS `source_image`;
 CREATE TABLE `source_image` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `source` tinyint(1) DEFAULT '0' COMMENT '采集源 1:快看 2:腾讯',
