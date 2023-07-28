@@ -276,17 +276,11 @@ func down(A *ant.Ant, imgs []string, dir, ext string, add int) (files []string, 
 }
 
 func browserList(A *ant.Ant, sourceImage *model.SourceImage, sourceChapter *model.SourceChapter) {
-	for tryLimit := 0; tryLimit <= 9; tryLimit++ {
+	for tryLimit := 0; tryLimit <= 3; tryLimit++ {
 		imgList, err := A.WebDriver.FindElements(selenium.ByClassName, "load-src")
-		fmt.Println(imgList, sourceChapter.SourceUrl)
-		box, err := A.WebDriver.FindElement(selenium.ByTagName, "body")
-		if err == nil {
-			b, _ := box.GetAttribute("innerHTML")
-			fmt.Println(b)
-		}
 		if err != nil {
-			if tryLimit > 5 {
-				if tryLimit == 9 {
+			if tryLimit > 1 {
+				if tryLimit == 3 {
 					msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %s err = %s",
 						config.Spe.SourceId,
 						sourceChapter.ComicId,
@@ -314,4 +308,9 @@ func browserList(A *ant.Ant, sourceImage *model.SourceImage, sourceChapter *mode
 		t := time.NewTicker(time.Second * 10)
 		<-t.C
 	}
+	msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %s",
+		config.Spe.SourceId,
+		sourceChapter.ComicId,
+		sourceChapter.SourceUrl)
+	model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
 }
