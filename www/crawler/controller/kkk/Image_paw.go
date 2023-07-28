@@ -49,7 +49,7 @@ func ImagePaw() {
 				}
 			}
 		}
-
+		sourceChapter.ViewType = Mode
 		sourceChapter.Retry += 1
 		orm.Eloquent.Save(sourceChapter)
 
@@ -66,6 +66,7 @@ func ImagePaw() {
 			continue
 		}
 		if Mode == 0 {
+			browserList(A, sourceImage, sourceChapter)
 			downImages(A, sourceChapter, sourceImage, dir)
 		} else {
 			downImages2(A, sourceChapter, sourceImage, dir)
@@ -193,7 +194,7 @@ func downImages(A *ant.Ant, sourceChapter *model.SourceChapter, sourceImage *mod
 	if imgCount == 0 {
 		return
 	}
-	pageSize := 15
+	pageSize := 20
 	if imgCount > pageSize {
 		pageTotal := int(math.Ceil(float64(imgCount) / float64(pageSize)))
 		for p := 1; p <= pageTotal; p++ {
@@ -205,7 +206,7 @@ func downImages(A *ant.Ant, sourceChapter *model.SourceChapter, sourceImage *mod
 			} else {
 				images = sourceImage.SourceData[startIndex:endIndex]
 			}
-			files, flag := down(A, images, dir, "webp", startIndex+1)
+			files, flag := down(A, images, dir, "jpg", startIndex+1)
 			if flag == false {
 				sourceImage.State = 1
 				sourceImage.Images = append(sourceImage.Images, files...)

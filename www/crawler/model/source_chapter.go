@@ -18,6 +18,7 @@ type SourceChapter struct {
 	Cover           string    `json:"cover"`
 	Title           string    `json:"title"`
 	Retry           int       `json:"retry"`
+	ViewType        int       `json:"view_type"`
 	SourceData      string    `json:"source_data"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
