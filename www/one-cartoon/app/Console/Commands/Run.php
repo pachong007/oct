@@ -40,6 +40,13 @@ class Run extends Command
     public function handle()
     {
         DB::statement("
+ALTER TABLE source_chapter ADD COLUMN `view_type` TINYINT ( 1 ) NOT NULL DEFAULT '0' COMMENT '0条漫 1页漫';
+        ");
+    }
+
+    private function dataInsert()
+    {
+        DB::statement("
 CREATE TABLE `source_comic` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `import_comic_id` int(11) NOT NULL DEFAULT '0',
@@ -132,5 +139,4 @@ CREATE TABLE `fail_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
         ");
     }
-
 }
