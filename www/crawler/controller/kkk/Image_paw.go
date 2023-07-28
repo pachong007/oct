@@ -12,7 +12,6 @@ import (
 	"github.com/ydtg1993/ant"
 	"math"
 	"regexp"
-	"strconv"
 	"time"
 )
 
@@ -39,7 +38,6 @@ func ImagePaw() {
 			continue
 		}
 		A.WebDriver.Get(sourceChapter.SourceUrl)
-		closeAds(A)
 		Mode := 0
 		pageDom, err := A.WebDriver.FindElement(selenium.ByClassName, "view-paging")
 		if err == nil {
@@ -68,14 +66,13 @@ func ImagePaw() {
 			rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			continue
 		}
-		fmt.Println(Mode)
+
 		if Mode == 0 {
 			browserList(A, sourceImage, sourceChapter)
 			downImages(A, sourceChapter, sourceImage, dir)
 		} else {
 			downImages2(A, sourceChapter, sourceImage, dir)
 		}
-		fmt.Println(sourceImage.Images)
 		if len(sourceImage.Images) == 0 {
 			rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			continue
@@ -91,14 +88,6 @@ func ImagePaw() {
 			rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			continue
 		}
-	}
-}
-
-func closeAds(A *ant.Ant) {
-	xpath := "//a[@href='javascript:void(0);' and @onclick=\"$('#lb-win').hide();$('body').css('overflow', 'auto');\"]"
-	element, err := A.WebDriver.FindElement(selenium.ByXPATH, xpath)
-	if err == nil {
-		element.Click()
 	}
 }
 
@@ -169,7 +158,6 @@ outLoop:
 			}
 			if err != nil {
 				A.WebDriver.Refresh()
-				closeAds(A)
 				continue
 			}
 			src, _ := img.GetAttribute("src")
@@ -184,7 +172,6 @@ outLoop:
 			nextButton, err := A.WebDriver.FindElement(selenium.ByXPATH, "//a[@class='block' and contains(@href, 'javascript:ShowNext();')]")
 			if err != nil {
 				A.WebDriver.Refresh()
-				closeAds(A)
 				continue
 			}
 			nextButton.Click()
@@ -217,7 +204,6 @@ outLoop:
 
 func downImages(A *ant.Ant, sourceChapter *model.SourceChapter, sourceImage *model.SourceImage, dir string) {
 	imgCount := len(sourceImage.SourceData)
-	fmt.Println("ccccc" + strconv.Itoa(imgCount))
 	if imgCount == 0 {
 		return
 	}
@@ -292,6 +278,7 @@ func down(A *ant.Ant, imgs []string, dir, ext string, add int) (files []string, 
 func browserList(A *ant.Ant, sourceImage *model.SourceImage, sourceChapter *model.SourceChapter) {
 	for tryLimit := 0; tryLimit <= 9; tryLimit++ {
 		imgList, err := A.WebDriver.FindElements(selenium.ByClassName, "load-src")
+		fmt.Println(imgList)
 		if err != nil {
 			if tryLimit > 5 {
 				if tryLimit == 9 {
@@ -314,11 +301,11 @@ func browserList(A *ant.Ant, sourceImage *model.SourceImage, sourceChapter *mode
 				sourceImage.SourceData = append(sourceImage.SourceData, img)
 			}
 		}
+		fmt.Println(sourceImage.SourceData)
 		if len(sourceImage.SourceData) > 0 {
 			return
 		}
 		A.WebDriver.Refresh()
 		A.WebDriver.Get(sourceChapter.SourceUrl)
-		closeAds(A)
 	}
 }
