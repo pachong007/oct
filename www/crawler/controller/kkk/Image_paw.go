@@ -12,6 +12,7 @@ import (
 	"github.com/ydtg1993/ant"
 	"math"
 	"regexp"
+	"time"
 )
 
 func ImagePaw() {
@@ -140,6 +141,7 @@ func downImages2(A *ant.Ant, sourceChapter *model.SourceChapter, sourceImage *mo
 	if err != nil {
 		return
 	}
+	repeat := 3
 outLoop:
 	for {
 		for try := 0; try <= 3; try++ {
@@ -161,9 +163,13 @@ outLoop:
 			if containsString(sourceImage.SourceData, src) == false {
 				sourceImage.SourceData = append(sourceImage.SourceData, src)
 			} else {
-				break outLoop
+				repeat--
+				if repeat < 0 {
+					break outLoop
+				}
 			}
 			nextButton.Click()
+			time.Sleep(1 * time.Second)
 			break
 		}
 	}

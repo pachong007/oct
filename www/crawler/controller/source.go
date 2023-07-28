@@ -16,7 +16,7 @@ func SourceOperate(source string) *SourceStrategy {
 	switch source {
 	case "www.1kkk.com":
 		config.Spe.SourceId = 1
-		config.Spe.Maxthreads = 10
+		config.Spe.Maxthreads = 7
 		return &SourceStrategy{
 			ComicPaw:    kkk.ComicPaw,
 			ComicUpdate: kkk.ComicUpdate,

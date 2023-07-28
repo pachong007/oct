@@ -87,7 +87,7 @@ func TaskChapterUpdate() {
 func TaskImage(source *SourceStrategy) {
 	for {
 		timestamp0 := time.Now()
-		threads := 10
+		threads := 7
 		wg := sync.WaitGroup{}
 		wg.Add(threads)
 		for i := 0; i < threads; i++ {
