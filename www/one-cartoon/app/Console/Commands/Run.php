@@ -64,7 +64,7 @@ CREATE TABLE `source_comic` (
   `popularity` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '人气热度',
   `is_free` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0免费 1收费',
   `is_finish` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0连载 1完结',
-  `description` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '描述',
+  `description` varchar(3000) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '描述',
   `source_data` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '源数据',
   `chapter_pick` int(11) NOT NULL DEFAULT '0' COMMENT '章节拨片',
   `retry` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0默认 1重抓',
