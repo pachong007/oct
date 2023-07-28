@@ -17,7 +17,6 @@ type SourceComic struct {
 	SourceId            int       `json:"source_id"`
 	SourceUrl           string    `json:"source_url"`
 	Cover               string    `json:"cover"`
-	CoverH              string    `json:"cover_h"`
 	Title               string    `json:"title"`
 	Author              string    `json:"Author"`
 	Label               Label     `json:"label" gorm:"type:json"`
