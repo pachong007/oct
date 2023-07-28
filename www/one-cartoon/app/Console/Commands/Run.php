@@ -72,7 +72,6 @@ CREATE TABLE `source_comic` (
   `last_chapter_update_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最新章节更新时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `cover_h` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '横板封面',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `source_id` (`source`,`source_id`) USING BTREE,
   UNIQUE KEY `source_uri` (`source_url`) USING BTREE
