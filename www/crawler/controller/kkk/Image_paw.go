@@ -67,12 +67,14 @@ func ImagePaw() {
 			rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			continue
 		}
+		fmt.Println(Mode)
 		if Mode == 0 {
 			browserList(A, sourceImage, sourceChapter)
 			downImages(A, sourceChapter, sourceImage, dir)
 		} else {
 			downImages2(A, sourceChapter, sourceImage, dir)
 		}
+		fmt.Println(sourceImage.Images)
 		if len(sourceImage.Images) == 0 {
 			rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			continue

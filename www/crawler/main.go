@@ -19,10 +19,10 @@ func main() {
 	Setup()
 	t := time.NewTicker(time.Second * 10)
 	<-t.C
-	go controller.TaskComic(Source)
+	/*go controller.TaskComic(Source)
 	go controller.TaskChapter(Source)
 	go controller.TaskChapterUpdate()
-	go controller.TaskReComic(Source)
+	go controller.TaskReComic(Source)*/
 	controller.TaskImage(Source)
 }
 
