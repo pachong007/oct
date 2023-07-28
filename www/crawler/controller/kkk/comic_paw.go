@@ -116,8 +116,8 @@ func category(kk common.Kind, sort string, limitPage int) {
 }
 
 func insertComic(e *colly.HTMLElement, kk common.Kind) {
-	title := e.DOM.Find(".title").Text()
 	url, _ := e.DOM.Find(".title>a").Attr("href")
+	title, _ := e.DOM.Find(".title>a").Attr("title")
 	id := tools.FindStringNumber(url)
 
 	exists := new(model.SourceComic).Exists(id)
