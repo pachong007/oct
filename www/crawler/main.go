@@ -4,11 +4,11 @@ import (
 	"comics/common"
 	"comics/controller"
 	"comics/robot"
+	"comics/robot/ant"
 	"comics/tools/config"
 	"comics/tools/database"
 	"comics/tools/log"
 	"comics/tools/rd"
-	"github.com/ydtg1993/ant"
 	"os"
 	"time"
 )
