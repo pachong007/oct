@@ -7,6 +7,12 @@ if [ ! -f "$backup_flag_file" ]; then
       # 执行命令
       cp -r /usr/local/etc/php/conf.d.backup/* /usr/local/etc/php/conf.d
       touch "$backup_flag_file"
+
+      cd /var/www/html/one-cartoon && composer update --no-scripts --no-autoloader
+      php artisan key:generate
+      php artisan vendor:publish --provider="Encore\Admin\AdminServiceProvider"
+      php artisan vendor:publish --provider="DLP\DLPServiceProvider" --force
+
       break
     else
       sleep 3
