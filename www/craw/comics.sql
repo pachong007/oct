@@ -321,6 +321,7 @@ CREATE TABLE `source_comic` (
   `source_id` int(11) NOT NULL COMMENT '源漫画id',
   `source_url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '源url',
   `cover` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '封面',
+  `cover_h` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '横板封面',
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '标题',
   `author` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '作者',
   `label` json NOT NULL COMMENT '标签',
@@ -342,7 +343,7 @@ CREATE TABLE `source_comic` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `source_id` (`source`,`source_id`) USING BTREE,
   UNIQUE KEY `source_uri` (`source_url`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画';
 
 -- ----------------------------
 -- Table structure for source_image
