@@ -69,26 +69,28 @@ class ResetPaw extends Command
             $list[] = $r;
         }
 
-        $chapters = SourceChapter::where('source',$sourceId)->where('status',0)->get();
-        exit;
-        foreach ($chapters as $chapter){
-            if($chapter->is_free == 1) continue;
-            if($chapter->retry > 9) continue;
-            $img = SourceImage::where('chapter_id',$chapter->id)->first();
-            if(!$img || $img->state == 0){
-                $list[] = $chapter->id;
-            }
-        }
+        $page=0;
+        $limit=500;
+        while(true) {
+            $chapters = SourceChapter::where('source', $sourceId)->offset($page*$limit)->limit($limit)->where('status', 0)->get()->toArray();
+            if(empty($chapters))break;
 
-        $newList = array_unique($list);
-        foreach ($newList as $id){
-            $chapter = SourceChapter::where('id',$id)->first();
-            if($chapter) {
-                if($chapter->is_free == 1) continue;
-                if(SourceImage::where('chapter_id',$id)->where('state',1)->exists()){
-                    continue;
+            foreach ($chapters as $chapter) {
+                $img = SourceImage::where('chapter_id', $chapter['id'])->first();
+                if (!$img || $img->state == 0) {
+                    $list[] = $chapter['id'];
                 }
-                $redis->rpush("source:comic:chapter", $id);
+            }
+
+            $newList = array_unique($list);
+            foreach ($newList as $id) {
+                $chapter = SourceChapter::where('id', $id)->first();
+                if ($chapter) {
+                    if (SourceImage::where('chapter_id', $id)->where('state', 1)->exists()) {
+                        continue;
+                    }
+                    $redis->rpush("source:comic:chapter", $id);
+                }
             }
         }
     }
