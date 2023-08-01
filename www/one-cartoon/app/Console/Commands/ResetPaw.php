@@ -66,6 +66,7 @@ class ResetPaw extends Command
         $list = $redis->lrange("source:comic:chapter",0,-1);
         if(!$list)$list = [];
         $redis->del("source:comic:chapter");
+        var_dump($retry);exit;
         foreach ($retry as $r){
             $list[] = $r;
         }
