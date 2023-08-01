@@ -41,7 +41,6 @@ class ResetPaw extends Command
      */
     public function handle()
     {
-        $this->reset('tx',2);
         $this->reset('kk',1);
     }
 
