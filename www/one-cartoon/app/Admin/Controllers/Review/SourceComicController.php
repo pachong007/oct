@@ -40,15 +40,27 @@ class SourceComicController extends AdminController
             }
             return "<div style='width:100px;height:60px'><img data-src='{$url}' class='cover img img-thumbnail' style='max-width:100px;height: 100%;' /></div>";
         });
+        Admin::script("_component.imgDelay('.cover2',{zoom:true});");
+        $grid->column('cover_h', '横板封面')->display(function ($v) {
+            if (preg_match("/^http/", $v)) {
+                $url = $v;
+            } else {
+                $url = env('IMG_DOMAIN') . '/' . $v;
+            }
+            return "<div style='width:100px;height:60px'><img data-src='{$url}' class='cover2 img img-thumbnail' style='max-width:100px;height: 100%;' /></div>";
+        });
         $grid->column('status', '审核')->using([0 => '待审核', 1 => '通过',2=>'待处理',3=>'同名暂存'])->dot([0 => 'info', 1 => 'success',2=>'warning',3=>'danger']);
         $grid->column('category', '分类');
         $grid->column('region', '地区');
         $grid->column('is_free', '付费状态')->using([0 => '免费', 1 => '收费'])->dot([0 => 'success',1=>'danger']);
         $grid->column('is_finish', '连载状态')->using([0 => '连载中', 1 => '完结']);
+        $grid->column('chasm', '章节断层')->using([0 => '连续', 1 => '断层']);
         $grid->column('source', '采集源')->display(function ($v) {
             $source_url = $this->source_url;
             if ($v == 1) {
-                return "<a href='$source_url' target='_blank'>kkk</a>";
+                return "<a href='$source_url' target='_blank'>快看</a>";
+            } else {
+                return "<a href='$source_url' target='_blank'>腾讯</a>";
             }
         });
         $grid->column('chapter_count', '章节数量');
@@ -93,10 +105,11 @@ EOF
         $grid->filter(function ($filter) {
             $filter->like('title', '标题');
             $filter->equal('region', '地区查询');
-            $filter->equal('source', '采集源')->select([1 => 'kkk']);
+            $filter->equal('source', '采集源')->select([1 => '快看', 2 => '腾讯']);
             $filter->equal('is_free', '付费状态')->select([0 => '免费', 1 => '收费']);
             $filter->equal('is_finish', '连载状态')->select([0 => '连载中', 1 => '完结']);
             $filter->equal('status', '审核状态')->select([0 => '待审核', 1 => '通过',2=>'待处理']);
+            $filter->equal('chasm', '章节断层')->select([0 => '连续', 1 => '断层']);
             $filter->group('chapter_count','章节数量', function ($group) {
                 $group->gt('大于');
                 $group->lt('小于');

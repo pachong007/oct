@@ -32,12 +32,22 @@ class SourceChapterController extends AdminController
         $url = rtrim(config('app.url'), '/') . '/';
         $grid->model()->orderBy('sort','DESC')->orderBy('status', 'ASC');
         $grid->column('id', __('ID'))->sortable();
+        Admin::script("_component.imgDelay('.cover',{zoom:true});");
+        $grid->column('cover', '封面')->display(function ($v) {
+            if (preg_match("/^http/", $v)) {
+                $url = $v;
+            } else {
+                $url = env('IMG_DOMAIN') . '/' . $v;
+            }
+            return "<div style='width:100px;height:60px'><img data-src='{$url}' class='cover img img-thumbnail' style='max-width:100px;height: 100%;' /></div>";
+        });
         $grid->column('comic_id', "漫画")->display(function ($comic_id)use($url){
             $comic = SourceComic::where('id',$comic_id)->first();
             $url .= 'admin/source_comic?id='.$comic_id;
             return "<a href='$url' target='_blank'>$comic->title</a>";
         });
         $grid->column('title', '标题')->width(220);
+        $grid->column('sort', '序号');
         $grid->column('status', '审核')->using([0 => '待审核', 1 => '通过'])->dot([0 => 'info', 1 => 'success']);
         $grid->column('is_free', '付费状态')->using([0 => '免费', 1 => '收费'])->dot([0 => 'success',1=>'danger']);
         $grid->column('source', '采集源')->display(function ($v){
@@ -77,7 +87,7 @@ class SourceChapterController extends AdminController
         $grid->filter(function ($filter) {
             $filter->equal('comic_id', '漫画id');
             $filter->like('title', '标题');
-            $filter->equal('source', '采集源')->select([1 => 'kkk']);
+            $filter->equal('source', '采集源')->select([1 => '快看', 2 => '腾讯']);
             $filter->equal('is_free', '付费状态')->select([0 => '免费', 1 => '收费']);
             $filter->equal('status', '审核状态')->select([0 => '待审核', 1 => '通过']);
             $filter->where(function ($query) {

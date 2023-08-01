@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 use App\Models\Manga\MangaComic;
 use App\Models\Pri\Category;
 use App\Models\Pri\Tag;
+use App\Models\SourceChapter;
 use App\Models\SourceComic;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -47,6 +48,7 @@ class VerifyComic extends Command
         $limit = 200;
 
         SourceComic::where('status', 2)
+            ->where('is_free',0)
             ->where('updated_at', '<', date('Y-m-d',strtotime('14 days ago')))
             ->update(['status' => 0]);
 
@@ -54,7 +56,7 @@ class VerifyComic extends Command
         $categories = Category::pluck('id', 'title')->all();
         $letters = Category::pluck('letter', 'id')->all();
         $tags = Tag::pluck('id', 'title')->all();
-        $sources = SourceComic::where('status', 0)->where('chapter_count', '>', 0)->offset($page * $limit)->limit($limit)->orderBy('created_at', 'ASC')->get();
+        $sources = SourceComic::where('status', 0)->where('chasm',0)->where('chapter_count', '>', 0)->offset($page * $limit)->limit($limit)->orderBy('created_at', 'ASC')->get();
         foreach ($sources as $sourceComic) {
             if (MangaComic::where('old_name', trim($sourceComic->title))->exists()) {
                 SourceComic::where('id', $sourceComic->id)->update(['status' => 3, 'updated_at' => date('Y-m-d H:i:s')]);
@@ -66,6 +68,7 @@ class VerifyComic extends Command
                 SourceComic::where('id', $sourceComic->id)->update(['status' => 2, 'updated_at' => date('Y-m-d H:i:s')]);
                 continue;
             }
+            if (!$this->chapterCheck($sourceComic->id))continue;
 
             if (isset($categories[$sourceComic->category])) {
                 $cateId = $categories[$sourceComic->category];
@@ -121,6 +124,27 @@ class VerifyComic extends Command
             SourceComic::where('id', $sourceComic->id)->update(['status' => 1]);
         }
 
+    }
+
+    private function chapterCheck($comicId)
+    {
+        $chapters = SourceChapter::where('comic_id',$comicId)->orderBy('sort','ASC')->pluck('sort','title')->all();
+        if(!empty($chapters)){
+            $currentSort = null;
+            foreach ($chapters as $sort){
+                if($currentSort === null){
+                    $currentSort = $sort;
+                    continue;
+                }
+                if($currentSort+1 !== $sort){
+                    //断层
+                    return false;
+                }
+                $currentSort = $sort;
+            }
+            return true;
+        }
+        return false;
     }
 
 }

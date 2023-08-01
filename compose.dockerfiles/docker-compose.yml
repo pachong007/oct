@@ -59,7 +59,7 @@ services:
     build: ./linux
     restart: always
     volumes:
-      - ./../../server/www/crawler:/home/comics
+      - ./../../server/www/craw:/home/comics
     environment:
       SOURCE_URL: "www.1kkk.com"
     shm_size: '100gb'

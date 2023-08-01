@@ -17,10 +17,13 @@ class BatchComicRetry extends BatchAction
     {
         foreach ($collection as $model) {
             $id = $model->id;
-            $redis = Redis::connection('kk');
-            SourceImage::where('comic_id',$id)->delete();
-            SourceChapter::where('comic_id',$id)->delete();
-            SourceComic::where('id',$id)->update(['chapter_count'=>0,'chapter_pick'=>0,'retry'=>7]);
+            if($model->source == 1){
+                $redis = Redis::connection('kk');
+            }else{
+                $redis = Redis::connection('tx');
+            }
+            
+            SourceComic::where('id',$id)->update(['chapter_count'=>SourceChapter::where('comic_id',$id)->count(),'chapter_pick'=>0,'retry'=>7]);
             $redis->lpush("source:comic:task",$id);
         }
 

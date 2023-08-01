@@ -17,7 +17,11 @@ class BatchChapterRetry extends BatchAction
         foreach ($collection as $model) {
             $id = $model->id;
             SourceImage::where('chapter_id',$id)->update(['state'=>0,'images'=>json_encode([])]);
-            $redis = Redis::connection('kk');
+            if($model->source == 1){
+                $redis = Redis::connection('kk');
+            }else{
+                $redis = Redis::connection('tx');
+            }
             $redis->lpush("source:comic:chapter",$id);
             SourceChapter::where('id',$id)->update(['retry'=>7]);
         }

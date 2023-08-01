@@ -2,6 +2,13 @@
 
 namespace App\Console\Commands;
 
+
+use App\Models\Manga\MangaChapter;
+use App\Models\Manga\MangaComic;
+use App\Models\Pri\Category;
+use App\Models\SourceChapter;
+use App\Models\SourceComic;
+use App\Models\SourceImage;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -39,102 +46,232 @@ class Run extends Command
      */
     public function handle()
     {
-        $this->dataInsert();
+        $comics = SourceComic::where('status',1)->where('is_free',1)->pluck('id')->all();
+        $comics = array_chunk($comics,100);
+        foreach ($comics as $comicIds){
+                try{
+                    DB::beginTransaction();
+                    $mgs = MangaComic::whereIn('source_comic_id',$comicIds)->select('comic_id','tab')->get();
+                    $mgIds = [];
+                    foreach ($mgs as $mg){
+                        $MC = (new MangaChapter())->setTable($mg->tab);
+                        $MC->where('comic_id',$mg->comic_id)->delete();
+                        $mgIds[] = $mg->comic_id;
+                    }
+                    MangaComic::whereIn('comic_id',$mgIds)->delete();
+                    SourceComic::whereIn('id',$comicIds)->update(['status'=>0,'chasm'=>1]);
+                    SourceChapter::whereIn('comic_id',$comicIds)->update(['status'=>0]);
+                    DB::commit();
+                }catch (\Exception $e){
+                    DB::rollBack();
+                }
+        }
     }
 
-    private function dataInsert()
+    private function chasm()
     {
-        DB::statement("DROP TABLE IF EXISTS `source_comic`;");
-        DB::statement("
-CREATE TABLE `source_comic` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sid` int(11) NOT NULL DEFAULT '0',
-  `source` tinyint(1) NOT NULL DEFAULT '1' COMMENT '采集源 1:快看 2:腾讯',
-  `source_id` int(11) NOT NULL COMMENT '源漫画id',
-  `source_url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '源url',
-  `cover` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '封面',
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '标题',
-  `author` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '作者',
-  `label` json NOT NULL COMMENT '标签',
-  `category` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '分类',
-  `region` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '地区',
-  `chapter_count` int(11) NOT NULL DEFAULT '0' COMMENT '章节数量',
-  `chapter_count_download` int(11) NOT NULL DEFAULT '0' COMMENT '章节数量(已下载)',
-  `like` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '喜欢',
-  `popularity` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '人气热度',
-  `is_free` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0免费 1收费',
-  `is_finish` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0连载 1完结',
-  `description` varchar(3000) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '描述',
-  `source_data` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '源数据',
-  `chapter_pick` int(11) NOT NULL DEFAULT '0' COMMENT '章节拨片',
-  `retry` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0默认 1重抓',
-  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0未审核 1通过',
-  `last_chapter_update_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最新章节更新时间',
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        $comics = SourceComic::where('status',1)->pluck('id')->all();
+        $comics = array_chunk($comics,100);
+        foreach ($comics as $comicIds){
+            $deleteIds = [];
+            foreach ($comicIds as $comicId){
+                $chapters = SourceChapter::where('comic_id',$comicId)->orderBy('sort','ASC')->pluck('sort','title')->all();
+                if(!empty($chapters)){
+                    $currentSort = null;
+                    foreach ($chapters as $sort){
+                        if($currentSort === null){
+                            $currentSort = $sort;
+                            continue;
+                        }
+                        if($currentSort+1 !== $sort){
+                            //断层
+                            $deleteIds[] = $comicId;
+                            break;
+                        }
+                        $currentSort = $sort;
+                    }
+                }
+            }
+
+            if(!empty($deleteIds)){
+                try{
+                    DB::beginTransaction();
+                    $mgs = MangaComic::whereIn('source_comic_id',$deleteIds)->select('comic_id','tab')->get();
+                    $mgIds = [];
+                    foreach ($mgs as $mg){
+                        $MC = (new MangaChapter())->setTable($mg->tab);
+                        $MC->where('comic_id',$mg->comic_id)->delete();
+                        $mgIds[] = $mg->comic_id;
+                    }
+                    MangaComic::whereIn('comic_id',$mgIds)->delete();
+                    SourceComic::whereIn('id',$deleteIds)->update(['status'=>0,'chasm'=>1,'chapter_pick'=>0]);
+                    SourceChapter::whereIn('comic_id',$deleteIds)->update(['status'=>0]);
+                    DB::commit();
+                }catch (\Exception $e){
+                    DB::rollBack();
+                }
+            }
+        }
+    }
+
+    private function deletePublish()
+    {
+        $comics = SourceComic::where('source',1)
+            ->where('created_at','>',date('2023-07-14'))
+            ->pluck('id')->all();
+        $comics = array_chunk($comics,100);
+        foreach ($comics as $comicIds){
+            try{
+                DB::beginTransaction();
+                $mgs = MangaComic::where('source',1)->whereIn('source_comic_id',$comicIds)->select('comic_id','tab')->get();
+                $mgIds = [];
+                foreach ($mgs as $mg){
+                    $MC = (new MangaChapter())->setTable($mg->tab);
+                    $MC->where('comic_id',$mg->comic_id)->delete();
+                    $mgIds[] = $mg->comic_id;
+                }
+                MangaComic::whereIn('comic_id',$mgIds)->delete();
+                SourceComic::whereIn('id',$comicIds)->update(['status'=>0]);
+                SourceChapter::whereIn('comic_id',$comicIds)->update(['status'=>0]);
+                DB::commit();
+            }catch (\Exception $e){
+                DB::rollBack();
+            }
+        }
+    }
+
+    private function cate()
+    {
+        $baijiaxing = array(
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+            'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+            'u', 'v', 'w', 'x', 'y', 'z',
+            '赵', '钱', '孙', '李', '周', '吴', '郑', '王', '冯', '陈',
+            '褚', '卫', '蒋', '沈', '韩', '杨', '朱', '秦', '尤', '许',
+            '何', '吕', '施', '张', '孔', '曹', '严', '华', '金', '魏',
+            '陶', '姜', '戚', '谢', '邹', '喻', '柏', '水', '窦', '章',
+            '云', '苏', '潘', '葛', '奚', '范', '彭', '郎', '鲁', '韦',
+            '昌', '马', '苗', '凤', '花', '方', '俞', '任', '袁', '柳',
+            '酆', '鲍', '史', '唐', '费', '廉', '岑', '薛', '雷', '贺',
+            '倪', '汤', '滕', '殷', '罗', '毕', '郝', '邬', '安', '常',
+            '乐', '于', '时', '傅', '皮', '卞', '齐', '康', '伍', '余'
+        );
+        $categories = Category::where('id','>',0)->get();
+        foreach ($categories as $k=>$category){
+            Category::where('id',$category->id)->update(['letter'=>$baijiaxing[$k]]);
+        }
+        $categories = Category::pluck('letter','id')->all();
+        $comics = MangaComic::where('comic_id','>',0)->get();
+        foreach ($comics as $comic){
+            $sorts = explode(',',$comic->sorts);
+            $letters = [];
+            foreach ($sorts as $sort){
+                if(isset($categories[$sort])){
+                    $letters[] = $categories[$sort];
+                }
+            }
+            $letters = join(',',$letters);
+            MangaComic::where('comic_id',$comic->comic_id)->update(['sorts_letter'=>$letters]);
+        }
+    }
+
+    private function tx()
+    {
+        $redis = Redis::connection('tx');
+        $list = $redis->lrange("source:comic:chapter",0,-1);
+
+        $chapters = SourceChapter::where('source',2)->where('status',0)->get();
+        foreach ($chapters as $chapter){
+            if($chapter->is_free == 1) continue;
+            $img = SourceImage::where('chapter_id',$chapter->id)->first();
+            if(!$img || $img->state == 0){
+                $list[] = $chapter->id;
+            }
+        }
+
+        $newList = array_unique($list);
+        $redis->del("source:comic:chapter");
+        foreach ($newList as $id){
+            $chapter = SourceChapter::where('id',$id)->first();
+            if($chapter) {
+                if($chapter->is_free == 1) continue;
+                if(SourceImage::where('chapter_id',$id)->where('state',1)->exists()){
+                    continue;
+                }
+                $redis->rpush("source:comic:chapter", $id);
+            }
+        }
+    }
+
+    private function kk()
+    {
+        $redis = Redis::connection('kk');
+        $list = $redis->lrange("source:comic:chapter",0,-1);
+
+        $chapters = SourceChapter::where('source',1)->where('status',0)->get();
+        foreach ($chapters as $chapter){
+            if($chapter->is_free == 1) continue;
+            $img = SourceImage::where('chapter_id',$chapter->id)->first();
+            if(!$img || $img->state == 0){
+                $list[] = $chapter->id;
+            }
+        }
+
+        $newList = array_unique($list);
+        $redis->del("source:comic:chapter");
+        foreach ($newList as $id){
+            $chapter = SourceChapter::where('id',$id)->first();
+            if($chapter) {
+                if($chapter->is_free == 1) continue;
+                if(SourceImage::where('chapter_id',$id)->where('state',1)->exists()){
+                    continue;
+                }
+                $redis->rpush("source:comic:chapter", $id);
+            }
+        }
+    }
+
+    private function ctt()
+    {
+        for ($i=0;$i<=256;$i++){
+            DB::statement("ALTER TABLE manhua.`bw_comic_chapter_$i` ADD COLUMN image_list JSON;");
+        }
+    }
+
+    private function ct()
+    {
+        SourceComic::where('id','>',0)->update(['status'=>0]);
+        SourceChapter::where('id','>',0)->update(['status'=>0]);
+        for ($i=0;$i<=256;$i++){
+            DB::statement("
+CREATE TABLE manhua.`bw_comic_chapter_$i` (
+`id` INT ( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT,
+`title` VARCHAR ( 500 ) NOT NULL DEFAULT '' COMMENT '章节名',
+`cover` VARCHAR ( 500 ) NOT NULL DEFAULT '' COMMENT '封面',
+`c_cover` VARCHAR ( 500 ) DEFAULT NULL COMMENT '加密封面',
+`comic_id` INT ( 11 ) UNSIGNED NOT NULL DEFAULT '0' COMMENT '漫画id',
+`source_comic_id` INT ( 11 ) NOT NULL DEFAULT '0',
+`source_chapter_id` INT ( 11 ) NOT NULL DEFAULT '0',
+`source_image_id` INT ( 11 ) NOT NULL DEFAULT '0',
+`images` json DEFAULT NULL,
+`display_order` INT ( 11 ) UNSIGNED NOT NULL DEFAULT '0' COMMENT '章节序号',
+`is_vip` TINYINT ( 1 ) UNSIGNED NOT NULL DEFAULT '0' COMMENT '是否vip章节 0不是 1是',
+`img_type` TINYINT ( 1 ) UNSIGNED NOT NULL DEFAULT '1',
+`total_photos` INT ( 11 ) UNSIGNED NOT NULL DEFAULT '0' COMMENT '章节图片数',
+`ip` VARCHAR ( 128 ) NOT NULL DEFAULT '' COMMENT '上传ip',
+`status` TINYINT ( 3 ) UNSIGNED NOT NULL DEFAULT '1',
+`created_at` int(11) unsigned NOT NULL COMMENT '创建时间',
+`updated_at` int(11) unsigned NOT NULL COMMENT '更新时间',
+`deleted_at` int(11) unsigned NOT NULL COMMENT '删除时间',
+`is_book_coupon_pay` TINYINT ( 1 ) DEFAULT '0' COMMENT '漫画章节书券解锁  默认为0 免费观看  1为需要书券解锁观看',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `source_id` (`source`,`source_id`) USING BTREE,
-  UNIQUE KEY `source_uri` (`source_url`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=15936 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画';
+  KEY `idx_comic` (`comic_id`) USING BTREE,
+  KEY `idx_display` (`display_order`) USING BTREE,
+  KEY `idx_create` (`created_at`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='漫画章节表';
 ");
 
-        DB::statement("DROP TABLE IF EXISTS `source_chapter`;");
-        DB::statement("
-CREATE TABLE `source_chapter` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sid` int(11) NOT NULL DEFAULT '0',
-  `scid` int(11) NOT NULL DEFAULT '0',
-  `comic_id` int(11) NOT NULL,
-  `source` tinyint(1) NOT NULL DEFAULT '1' COMMENT '采集源 1:快看 2:腾讯',
-  `source_chapter_id` int(11) NOT NULL COMMENT '源章节id',
-  `source_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '源url',
-  `cover` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '封面',
-  `title` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '标题',
-  `sort` int(11) NOT NULL DEFAULT '0',
-  `is_free` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0免费 1收费',
-  `source_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0未审核 1通过',
-  `retry` tinyint(1) NOT NULL DEFAULT '0',
-  `view_type` TINYINT (1) NOT NULL DEFAULT '0' COMMENT '0条漫 1页漫',
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `source` (`source`,`comic_id`,`source_url`) USING BTREE,
-  KEY `comic_id` (`comic_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=258616 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画章节';
-        ");
-
-        DB::statement("DROP TABLE IF EXISTS `source_image`;");
-        DB::statement("
-CREATE TABLE `source_image` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `source` tinyint(1) DEFAULT '0' COMMENT '采集源 1:快看 2:腾讯',
-  `comic_id` int(11) NOT NULL DEFAULT '0',
-  `chapter_id` int(11) NOT NULL,
-  `images` json NOT NULL,
-  `source_data` json NOT NULL,
-  `state` tinyint(1) NOT NULL DEFAULT '0' COMMENT '资源获取:0未开始 1已完成',
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `chapter_id` (`chapter_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=363 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-        ");
-
-        DB::statement("DROP TABLE IF EXISTS `fail_info`;");
-        DB::statement("
-CREATE TABLE `fail_info` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `source` tinyint(1) NOT NULL DEFAULT '1' COMMENT '采集源 1:快看 2:腾讯',
-  `type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0漫画列表 1漫画 2章节 3图片',
-  `err` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '错误关键词',
-  `url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '地址',
-  `info` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '失败信息记录',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `type` (`type`) USING BTREE,
-  KEY `err` (`err`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-        ");
+        }
     }
 }
