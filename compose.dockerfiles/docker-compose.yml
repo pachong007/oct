@@ -55,13 +55,26 @@ services:
       - myserver_v1
     depends_on:
       - myphp
-  comic:
+  kk:
     build: ./linux
     restart: always
     volumes:
       - ./../../server/www/craw:/home/comics
     environment:
-      SOURCE_URL: "www.1kkk.com"
+      SOURCE_URL: "www.kuaikanmanhua.com"
+    shm_size: '100gb'
+    networks:
+      - myserver_v1
+    depends_on:
+      - mydb
+      - myredis
+  tx:
+    build: ./linux
+    restart: always
+    volumes:
+      - ./../../server/www/craw:/home/comics
+    environment:
+      SOURCE_URL: "ac.qq.com"
     shm_size: '100gb'
     networks:
       - myserver_v1
