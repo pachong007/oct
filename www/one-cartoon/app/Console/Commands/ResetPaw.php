@@ -64,13 +64,11 @@ class ResetPaw extends Command
         $retry = $redis->lrange("source:comic:retry:chapter",0,-1);
         $redis->del("source:comic:retry:chapter");
         $list = $redis->lrange("source:comic:chapter",0,-1);
-        if(!$list)$list = [];
         $redis->del("source:comic:chapter");
-        var_dump($retry);exit;
         foreach ($retry as $r){
             $list[] = $r;
         }
-
+exit;
         $chapters = SourceChapter::where('source',$sourceId)->where('status',0)->where('created_at','>',date('Y-m-d H:i:s',date('Y-m-d',strtotime('12 days ago'))))->get();
         foreach ($chapters as $chapter){
             if($chapter->is_free == 1) continue;
