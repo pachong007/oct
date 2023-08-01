@@ -304,6 +304,7 @@ CREATE TABLE `source_chapter` (
   `is_free` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0免费 1收费',
   `source_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0未审核 1通过',
+  `retry` int(11) NOT NULL DEFAULT '0',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
