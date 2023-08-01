@@ -73,7 +73,7 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/public/resources'),
             'visibility' => 'public',
-            'url' => rtrim(env('SOURCE_URL', ''),'/').'/',
+            'url' => rtrim(env('IMG_DOMAIN', ''),'/').'/',
         ],
     ],
 

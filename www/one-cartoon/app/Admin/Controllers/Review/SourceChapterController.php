@@ -138,7 +138,7 @@ EOF
         $source = [];
         if(isset($chapter['image'])) {
             foreach ($chapter['image']['source_data'] as $k=>$url) {
-                $source[] = ['sort'=>(string)$k,'url' => env('IMG_DOMAIN') . '/' . $url];
+                $source[] = ['sort'=>(string)$k,'url' => $url];
             }
             $form->html((new Linear('source_data',[
                 'sort' => ['name' => '序号', 'type' => 'text','style'=>'width:45px'],
