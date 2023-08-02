@@ -33,7 +33,7 @@ class ComicController extends AdminController
             'driver'    => 'mysql',
             'host'      => '107.148.191.71',
             'database'  => $db,
-            'username'  => $db,
+            'username'  => 'root',
             'password'  => 'docker@6603',
             'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci'
