@@ -123,7 +123,7 @@ class VerifyComic extends Command
                     ]);
                     $publish = Publish::where(['database' => $db, 'publish_id' => $sourceComic->id])->first();
                 }
-                var_dump($chapterDone,count($publish->publish_chapter_id),'line1');
+                var_dump($chapterDone,$publish,'line1');
                 if ($chapterDone <= count($publish->publish_chapter_id)) {
                     continue;
                 }
