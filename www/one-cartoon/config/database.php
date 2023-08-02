@@ -22,8 +22,6 @@ $db = [
 ];
 
 $basic = array_merge($db,['database'=>env('DB_DATABASE', 'forge')]);
-$manhua = array_merge($db,['database'=>'manhua']);
-$private = array_merge($db,['database'=>'hhlz_private']);
 
 return [
 
@@ -67,9 +65,6 @@ return [
         ],
 
         'mysql' => $basic,
-        'comics' => $basic,
-        'manhua'=> $manhua,
-        'hhlz_private' => $private,
 
         'pgsql' => [
             'driver' => 'pgsql',
