@@ -113,7 +113,7 @@ class VerifyComic extends Command
                     $ct->setConnection("mysql_${db}");
                     $ct->insert($typeInsert);
 
-                    Publish::insert([
+                    $pid = Publish::insertGetId([
                         'comic_id' => $sourceComic->id,
                         'chapter_id' => json_encode([]),
                         'source' => $sourceComic->source,
@@ -121,7 +121,7 @@ class VerifyComic extends Command
                         'publish_id' => $publishId,
                         'publish_chapter_id' => json_encode([])
                     ]);
-                    $publish = Publish::where(['database' => $db, 'publish_id' => $sourceComic->id])->first();
+                    $publish = Publish::where(['id' => $pid])->first();
                 }
                 var_dump($chapterDone,$publish,'line1');
                 if ($chapterDone <= count($publish->publish_chapter_id)) {
