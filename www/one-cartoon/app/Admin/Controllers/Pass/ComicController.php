@@ -32,7 +32,7 @@ class ComicController extends AdminController
             'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci'
         ]]);
-        $Comic = DB::connection("database.connections.mysql_${db}")->table('mc_comic');
+        $Comic = $Comic = DB::connection("mysql_${db}")->table('mc_comic');
         $grid = new Grid($Comic);
         $grid->model()->orderBy('created_at','DESC');
 
