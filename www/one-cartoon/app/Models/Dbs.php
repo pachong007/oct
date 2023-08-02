@@ -13,5 +13,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class Dbs extends Model
 {
-    protected $table = 'publish';
+    protected $table = 'dbs';
 }
