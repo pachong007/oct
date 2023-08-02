@@ -154,7 +154,7 @@ class VerifyComic extends Command
             if ($chapter->image && $chapter->image['state'] == 1) {
                 $images = $chapter->image['images'];
                 $sort = $cha->where('mid',$mid)->orderBy('xid','DESC')->select('xid')->first();
-                $xid = 0;
+                $xid = 1;
                 if($sort)$xid = $sort->xid;
                 $cid = $cha->insertGetId([
                     'mid' => $mid,
