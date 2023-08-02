@@ -123,7 +123,7 @@ class VerifyComic extends Command
                     ]);
                     $publish = Publish::where(['id' => $pid])->first();
                 }
-
+                var_dump($chapterDone,$publish,'line1');
                 if ($chapterDone <= count($publish->publish_chapter_id)) {
                     continue;
                 }
@@ -142,7 +142,7 @@ class VerifyComic extends Command
         } else {
             $chapters = SourceChapter::where('comic_id', $comicId)->get()->toArray();
         }
-
+        var_dump($chapters,$chapterIds,'line2');
         foreach ($chapters as $chapter) {
             if ($chapterLimit < 0) break;
             if (!empty($chapter['image']) && $chapter['image']['state'] == 1) {
