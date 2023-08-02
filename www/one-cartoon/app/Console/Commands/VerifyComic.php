@@ -132,7 +132,9 @@ class VerifyComic extends Command
                 if ($chapterDone <= count($publish->publish_chapter_id)) {
                     continue;
                 }
-                $this->insertChapter($db, $sourceComic->id, $publish->publish_id, $publish->chapter_id);
+                $res = $this->insertChapter($db, $sourceComic->id, $publish->publish_id, $publish->chapter_id);
+                Publish::where('id',$publish->id)->update(['chapter_id'=>json_encode($res[0]),
+                    'publish_chapter_id'=>json_encode($res[1])]);
                 continue;
             }
         }
@@ -149,18 +151,18 @@ class VerifyComic extends Command
         }
         $cha = new Chapter();
         $cha->setConnection("mysql_${db}");
+
+        $p_chapter_id = [];
+        $p_publish_chapter_id = [];
         foreach ($chapters as $chapter) {
             if ($chapterLimit < 0) break;
             if ($chapter->image && $chapter->image['state'] == 1) {
                 $images = $chapter->image['images'];
-                $sort = $cha->where('mid',$mid)->orderBy('xid','DESC')->select('xid')->first();
-                $xid = 1;
-                if($sort)$xid = $sort->xid;
                 $cid = $cha->insertGetId([
                     'mid' => $mid,
-                    'xid' => $xid,
-                    'name' => $chapter['title'],
-                    'jxurl' => $chapter['source_url'],
+                    'xid' => $chapter->sort,
+                    'name' => $chapter->title,
+                    'jxurl' => $chapter->source_url,
                     'pnum' => count($images),
                     'addtime' => time(),
                 ]);
@@ -180,8 +182,11 @@ class VerifyComic extends Command
                     $img->setConnection("mysql_${db}");
                     $img->insert($insertImages);
                 }
+                $p_chapter_id[] = $chapter->id;
+                $p_publish_chapter_id[] = $cid;
                 $chapterLimit--;
             }
         }
+        return [$p_chapter_id,$p_publish_chapter_id];
     }
 }
