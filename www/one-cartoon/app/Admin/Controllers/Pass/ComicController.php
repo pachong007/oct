@@ -41,7 +41,6 @@ class ComicController extends AdminController
         $comic = new Comic();
         $comic->setConnection("mysql_${db}");
         $grid = new Grid($comic);
-        $grid->model()->orderBy('created_at','DESC');
 
         $grid->column('id', __('ID'))->sortable();
         $grid->column('name', '标题');
