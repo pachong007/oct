@@ -9,9 +9,9 @@
 namespace App\Models;
 
 
-class Chapter extends BaseModel
+class Image extends BaseModel
 {
     public $timestamps = false;
     protected $connection = 'mysql';
-    protected $table = 'mc_comic_chapter';
+    protected $table = 'mc_comic_pic';
 }

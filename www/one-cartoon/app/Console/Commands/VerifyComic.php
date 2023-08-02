@@ -2,10 +2,11 @@
 
 namespace App\Console\Commands;
 
-
-use App\Models\Manga\MangaComic;
-use App\Models\Pri\Category;
-use App\Models\Pri\Tag;
+use App\Models\Chapter;
+use App\Models\Comic;
+use App\Models\Dbs;
+use App\Models\Image;
+use App\Models\Publish;
 use App\Models\SourceChapter;
 use App\Models\SourceComic;
 use Illuminate\Console\Command;
@@ -45,106 +46,105 @@ class VerifyComic extends Command
     public function handle()
     {
         $page = 0;
-        $limit = 200;
+        $limit = 2;
 
         SourceComic::where('status', 2)
-            ->where('is_free',0)
-            ->where('updated_at', '<', date('Y-m-d',strtotime('14 days ago')))
+            ->where('updated_at', '<', date('Y-m-d', strtotime('7 days ago')))
             ->update(['status' => 0]);
+        $sources = SourceComic::where('status', 0)->where('chapter_count', '>', 0)->offset($page * $limit)->limit($limit)->orderBy('created_at', 'ASC')->get();
 
-        $time = time();
-        $categories = Category::pluck('id', 'title')->all();
-        $letters = Category::pluck('letter', 'id')->all();
-        $tags = Tag::pluck('id', 'title')->all();
-        $sources = SourceComic::where('status', 0)->where('chasm',0)->where('chapter_count', '>', 0)->offset($page * $limit)->limit($limit)->orderBy('created_at', 'ASC')->get();
-        foreach ($sources as $sourceComic) {
-            if (MangaComic::where('old_name', trim($sourceComic->title))->exists()) {
-                SourceComic::where('id', $sourceComic->id)->update(['status' => 3, 'updated_at' => date('Y-m-d H:i:s')]);
-                continue;
-            }
-            /*章节检查*/
-            $result = DB::select("SELECT CountChapterDone({$sourceComic->id}) as result")[0];
-            if ($result->result == 0) {
-                SourceComic::where('id', $sourceComic->id)->update(['status' => 2, 'updated_at' => date('Y-m-d H:i:s')]);
-                continue;
-            }
-            if (!$this->chapterCheck($sourceComic->id))continue;
+        $DBs = Dbs::select('name')->get();
+        foreach ($DBs as $D) {
+            $db = $D->name;
+            config(["database.connections.mysql_${db}" => [
+                'driver'    => 'mysql',
+                'host'      => '107.148.191.71',
+                'database'  => $db,
+                'username'  => 'root',
+                'password'  => 'docker@6603',
+                'charset'   => 'utf8',
+                'collation' => 'utf8_unicode_ci'
+            ]]);
 
-            if (isset($categories[$sourceComic->category])) {
-                $cateId = $categories[$sourceComic->category];
-            } else if ($sourceComic->category == '') {
-                $cateId = $categories['其它'];
-            } else {
-                Category::insert(['title' => $sourceComic->category]);
-                $categories = Category::pluck('title', 'id')->all();
-                $cateId = $categories[$sourceComic->category];
-                $letters = Category::pluck('letter', 'id')->all();
-            }
-
-            $tag_ids = [];
-            foreach ($sourceComic->label as $label) {
-                if (isset($tags[$label])) {
-                    $tag_ids[] = $tags[$label];
-                } else if ($label == '') {
+            foreach ($sources as $sourceComic) {
+                /*章节检查*/
+                $chapterDone = SourceChapter::join('source_image', 'source_chapter.id', '=', 'source_image.chapter_id')->where('source_image.state', 1)->count();
+                if ($chapterDone === 0) {
+                    SourceComic::where('id', $sourceComic->id)->update(['status' => 2, 'updated_at' => date('Y-m-d H:i:s')]);
                     continue;
-                } else {
-                    Tag::insert(['title' => $label]);
-                    $tags = Tag::pluck('id', 'title')->all();
-                    $tag_ids[] = $tags[$label];
+                }
+                $publish = Publish::where(['database'=>$db,'publish_id'=>$sourceComic->id])->first();
+                if(!$publish){
+                    $comic = new Comic();
+                    $comic->setConnection("mysql_${db}");
+                    $comic->insertGetId([
+                       'name'=>$sourceComic->title,
+                        'yname'=>'',
+                        'pic'=>rtrim(env("IMG_DOMAIN"),"/")."/".$sourceComic->cover,
+                        'cid'=>1,
+                        'serialize'=>$sourceComic->is_finish == 1 ? '完结':'连载',
+                        'author'=>$sourceComic->author,
+                        'content'=>$sourceComic->description,
+                        'nums'=>$sourceComic->chapter_count,
+                        'score'=>mt_rand(1,9),
+                        'did'=>$sourceComic->id,
+                        'ly'=>'kk',
+                    ]);
+                    Publish::insert([
+                        'comic_id'=>$sourceComic->id,
+                        'chapter_id'=>json_encode([]),
+                        'source'=>$sourceComic->source,
+                        'database'=>$db,
+                        'publish_id'=>0,
+                        'publish_chapter_id'=>json_encode([])
+                    ]);
+                    $publish = Publish::where(['database'=>$db,'publish_id'=>$sourceComic->id])->first();
+                }
+                if($publish){
+                    if($chapterDone <= count($publish->publish_chapter_id)){
+                        continue;
+                    }
+                    $this->insertChapter($db,$publish->publish_id,$publish->chapter_id);
+                    continue;
                 }
             }
-            $horizontal_cover = '';
-            if($sourceComic->source == 1){
-                $horizontal_cover = $sourceComic->cover_h;
-            }else if($sourceComic->source == 2){
-                $horizontal_cover = $sourceComic->cover;
-            }
-            $mangaId = MangaComic::insertGetId([
-                'source_comic_id' => $sourceComic->id,
-                'sort_id' => $cateId,
-                'sorts' => $cateId,
-                'sorts_letter' => isset($letters[$cateId]) ? $letters[$cateId] : '',
-                'type' => 2,
-                'name' => trim($sourceComic->title),
-                'old_name' => trim($sourceComic->title),
-                'source' => $sourceComic->source,
-                'author' => $sourceComic->author,
-                'description' => $sourceComic->description,
-                'keywords' => $sourceComic->title,
-                'tags' => join(',', $tag_ids),
-                'vertical_cover' => $sourceComic->cover,
-                'horizontal_cover' => $horizontal_cover,
-                'status' => 1,
-                'issue_time' => strtotime($sourceComic->created_at),
-                'is_finish' => $sourceComic->is_finish,
-                'created_at' => $time,
-                'updated_at' => $time
-            ]);
-            MangaComic::where('comic_id', $mangaId)->update(['tab' => $mangaId % 256]);
-            SourceComic::where('id', $sourceComic->id)->update(['status' => 1]);
         }
-
     }
 
-    private function chapterCheck($comicId)
+    private function insertChapter($db,$mid,$chapterIds)
     {
-        $chapters = SourceChapter::where('comic_id',$comicId)->orderBy('sort','ASC')->pluck('sort','title')->all();
-        if(!empty($chapters)){
-            $currentSort = null;
-            foreach ($chapters as $sort){
-                if($currentSort === null){
-                    $currentSort = $sort;
-                    continue;
-                }
-                if($currentSort+1 !== $sort){
-                    //断层
-                    return false;
-                }
-                $currentSort = $sort;
-            }
-            return true;
-        }
-        return false;
-    }
+        $chapters = SourceChapter::whereNotIn('id',$chapterIds)
+            ->get()->toArray();
+        foreach ($chapters as $chapter){
+            if(!empty($chapter['image']) && $chapter['image']['state'] == 1){
+                $images = $chapter['image']['images'];
+                $cha = new Chapter();
+                $cha->setConnection("mysql_${db}");
+                $cid = $cha->insertGetId([
+                    'mid'=>$mid,
+                    'xid'=>$chapter['sort'],
+                    'name'=>$chapter['title'],
+                    'jxurl'=>$chapter['source_url'],
+                    'pnum'=>count($images),
+                    'addtime'=>time(),
+                ]);
 
+                $insertImages = [];
+                foreach ($images as $k=>$image){
+                    $insertImages[] = [
+                      'cid'=>$cid,
+                      'mid'=>$mid,
+                      'img'=>rtrim(env("IMG_DOMAIN"),"/")."/".$image,
+                      'xid'=>$k,
+                      'md5'=>''
+                    ];
+                }
+                if(!empty($insertImages)) {
+                    $img = new Image();
+                    $img->setConnection("mysql_${db}");
+                    $img->insert($insertImages);
+                }
+            }
+        }
+    }
 }
