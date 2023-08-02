@@ -71,6 +71,12 @@ class VerifyComic extends Command
                 'collation' => 'utf8_unicode_ci'
             ]]);
 
+            $comic = new Comic();
+            $comic->setConnection("mysql_${db}");
+            $mct = new McType();
+            $mct->setConnection("mysql_${db}");
+            $ct = new ComicType();
+            $ct->setConnection("mysql_${db}");
             foreach ($sources as $sourceComic) {
                 if($comicLimit < 0)break;
                 /*章节检查*/
@@ -82,8 +88,7 @@ class VerifyComic extends Command
                 $publish = Publish::where(['database' => $db, 'comic_id' => $sourceComic->id])->first();
                 if (!$publish) {
                     $comicLimit--;
-                    $comic = new Comic();
-                    $comic->setConnection("mysql_${db}");
+
                     $publishId = $comic->insertGetId([
                         'name' => $sourceComic->title,
                         'yname' => '',
@@ -98,8 +103,7 @@ class VerifyComic extends Command
                         'ly' => 'kk',
                         'addtime' => time(),
                     ]);
-                    $mct = new McType();
-                    $mct->setConnection("mysql_${db}");
+
                     $tag = $mct->where('fid', 1)->inRandomOrder()->first();
                     $tag2 = $mct->where('fid', 2)->inRandomOrder()->first();
                     $tag3 = $mct->where('fid', 3)->inRandomOrder()->first();
@@ -112,8 +116,6 @@ class VerifyComic extends Command
                         ['mid' => $publishId, 'tid' => $tag4->id],
                         ['mid' => $publishId, 'tid' => $tag5->id],
                     ];
-                    $ct = new ComicType();
-                    $ct->setConnection("mysql_${db}");
                     $ct->insert($typeInsert);
 
                     $pid = Publish::insertGetId([
@@ -145,16 +147,18 @@ class VerifyComic extends Command
         } else {
             $chapters = SourceChapter::where('comic_id', $comicId)->get();
         }
-
+        $cha = new Chapter();
+        $cha->setConnection("mysql_${db}");
         foreach ($chapters as $chapter) {
             if ($chapterLimit < 0) break;
             if ($chapter->image && $chapter->image['state'] == 1) {
                 $images = $chapter->image['images'];
-                $cha = new Chapter();
-                $cha->setConnection("mysql_${db}");
+                $sort = $cha->where('mid',$mid)->orderBy('xid','DESC')->select('xid')->first();
+                $xid = 0;
+                if($sort)$xid = $sort->xid;
                 $cid = $cha->insertGetId([
                     'mid' => $mid,
-                    'xid' => $chapter['sort'],
+                    'xid' => $xid,
                     'name' => $chapter['title'],
                     'jxurl' => $chapter['source_url'],
                     'pnum' => count($images),
