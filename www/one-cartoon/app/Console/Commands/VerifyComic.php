@@ -30,6 +30,7 @@ class VerifyComic extends Command
      */
     protected $description = '自动审核漫画';
 
+    private $comicLimit = 5;
     private $chapterLimit = 20;
 
     /**
@@ -49,13 +50,13 @@ class VerifyComic extends Command
      */
     public function handle()
     {
-        $page = 0;
-        $limit = 1;
+        $limit = 500;
+        $comicLimit = $this->comicLimit;
 
         SourceComic::where('status', 2)
             ->where('updated_at', '<', date('Y-m-d', strtotime('7 days ago')))
             ->update(['status' => 0]);
-        $sources = SourceComic::where('status', 0)->where('chapter_count', '>', 0)->offset($page * $limit)->limit($limit)->orderBy('created_at', 'ASC')->get();
+        $sources = SourceComic::inRandomOrder()->where('chapter_count', '>', 0)->limit($limit)->get();
 
         $DBs = Dbs::select('name')->get();
         foreach ($DBs as $D) {
@@ -71,6 +72,7 @@ class VerifyComic extends Command
             ]]);
 
             foreach ($sources as $sourceComic) {
+                if($comicLimit < 0)break;
                 /*章节检查*/
                 $chapterDone = SourceChapter::join('source_image', 'source_chapter.id', '=', 'source_image.chapter_id')->where('source_image.state', 1)->count();
                 if ($chapterDone === 0) {
@@ -79,6 +81,7 @@ class VerifyComic extends Command
                 }
                 $publish = Publish::where(['database' => $db, 'comic_id' => $sourceComic->id])->first();
                 if (!$publish) {
+                    $comicLimit--;
                     $comic = new Comic();
                     $comic->setConnection("mysql_${db}");
                     $publishId = $comic->insertGetId([
