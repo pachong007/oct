@@ -9,9 +9,9 @@
 namespace App\Models;
 
 
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model;
 
-class Comic extends BaseModel
+class Comic extends Model
 {
     protected $connection = 'mysql';
     protected $table = 'mc_comic';
