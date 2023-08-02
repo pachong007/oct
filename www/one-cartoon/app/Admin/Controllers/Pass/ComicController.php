@@ -20,6 +20,12 @@ class ComicController extends AdminController
 {
     protected $title = '漫画';
 
+    /**
+     * CREATE USER 'root'@'172.18.0.6' IDENTIFIED BY 'docker@6603';
+     * GRANT ALL PRIVILEGES ON *.* TO 'root'@'172.18.0.6' WITH GRANT OPTION;
+     * FLUSH PRIVILEGES;
+     * @return Grid
+     */
     protected function grid()
     {
         $db = 'fxkexie_cn';
@@ -28,7 +34,7 @@ class ComicController extends AdminController
             'host'      => '107.148.191.71',
             'database'  => $db,
             'username'  => $db,
-            'password'  => 'enLEJB7ZJzYkhZRM',
+            'password'  => 'docker@6603',
             'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci'
         ]]);
