@@ -109,7 +109,9 @@ class VerifyComic extends Command
                         ['mid'=>$publishId,'tid'=>$tag4->id],
                         ['mid'=>$publishId,'tid'=>$tag5->id],
                     ];
-                    ComicType::insert($typeInsert);
+                    $ct = new ComicType();
+                    $ct->setConnection("mysql_${db}");
+                    $ct->insert($typeInsert);
 
                     Publish::insert([
                         'comic_id'=>$sourceComic->id,
