@@ -145,7 +145,6 @@ class VerifyComic extends Command
 
         foreach ($chapters as $chapter) {
             if ($chapterLimit < 0) break;
-            var_dump($chapter);
             if ($chapter->image && $chapter->image['state'] == 1) {
                 $images = $chapter->image['images'];
                 $cha = new Chapter();
