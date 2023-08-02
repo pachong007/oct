@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Comic extends Model
 {
+    public $timestamps = false;
     protected $connection = 'mysql';
     protected $table = 'mc_comic';
 }
