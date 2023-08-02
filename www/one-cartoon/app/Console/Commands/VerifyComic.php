@@ -123,7 +123,7 @@ class VerifyComic extends Command
                     ]);
                     $publish = Publish::where(['id' => $pid])->first();
                 }
-                var_dump($chapterDone,$publish,'line1');
+
                 if ($chapterDone <= count($publish->publish_chapter_id)) {
                     continue;
                 }
@@ -138,15 +138,16 @@ class VerifyComic extends Command
         $chapterLimit = $this->chapterLimit;
         if (!empty($chapterIds)) {
             $chapters = SourceChapter::where('comic_id', $comicId)->whereNotIn('id', $chapterIds)
-                ->get()->toArray();
+                ->get();
         } else {
-            $chapters = SourceChapter::where('comic_id', $comicId)->get()->toArray();
+            $chapters = SourceChapter::where('comic_id', $comicId)->get();
         }
-        var_dump($chapters,$chapterIds,'line2');
+
         foreach ($chapters as $chapter) {
             if ($chapterLimit < 0) break;
-            if (!empty($chapter['image']) && $chapter['image']['state'] == 1) {
-                $images = $chapter['image']['images'];
+            var_dump($chapter);
+            if ($chapter->image && $chapter->image['state'] == 1) {
+                $images = $chapter->image['images'];
                 $cha = new Chapter();
                 $cha->setConnection("mysql_${db}");
                 $cid = $cha->insertGetId([
