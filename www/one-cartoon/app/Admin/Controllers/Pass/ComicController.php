@@ -32,8 +32,9 @@ class ComicController extends AdminController
             'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci'
         ]]);
-        $Comic = $Comic = DB::connection("mysql_${db}")->table('mc_comic');
-        $grid = new Grid($Comic);
+        $comic = new Comic();
+        $comic->setConnection("mysql_${db}");
+        $grid = new Grid($comic);
         $grid->model()->orderBy('created_at','DESC');
 
         $grid->column('id', __('ID'))->sortable();
