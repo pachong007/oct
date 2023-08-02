@@ -25,7 +25,7 @@ class ComicController extends AdminController
         $db = 'fxkexie_cn';
         config(["database.connections.mysql_${db}" => [
             'driver'    => 'mysql',
-            'host'      => '172.18.0.1',
+            'host'      => '107.148.191.71',
             'database'  => $db,
             'username'  => $db,
             'password'  => 'enLEJB7ZJzYkhZRM',
