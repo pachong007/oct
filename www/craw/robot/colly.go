@@ -3,6 +3,7 @@ package robot
 import (
 	"comics/tools"
 	"comics/tools/config"
+	"comics/tools/rd"
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/extensions"
 	"github.com/tidwall/gjson"
@@ -24,15 +25,28 @@ func GetColly() *colly.Collector {
 }
 
 func GetProxy() string {
-	content, code, _ := tools.HttpRequest("https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=carter&token=ZjNKNFZlSHRQNmlhY1R0MCtpY0tKQT09&auth=1&geo=all&city=all&agreement=1&timeout=15&num=1&rtype=0",
-		"GET", "", map[string]string{}, []*http.Cookie{})
 	proxy := ""
-	if code == 200 {
-		res := gjson.Parse(content)
-		proxy = "http://" + res.Get("data").Get("ip").String() + ":" + res.Get("data").Get("port").String()
+	cache := "proxy:" + config.Spe.SourceUrl
+	cacheProxy := rd.Get(cache)
+	if cacheProxy != "" {
+		return cacheProxy
 	}
-	t := time.NewTicker(time.Second * 1)
-	<-t.C
+	for {
+		content, code, _ := tools.HttpRequest("https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=carter&token=ZjNKNFZlSHRQNmlhY1R0MCtpY0tKQT09&auth=1&geo=all&city=all&agreement=1&timeout=30&num=1&rtype=0",
+			"GET", "", map[string]string{}, []*http.Cookie{})
+		if code == 200 {
+			res := gjson.Parse(content)
+			proxy = "http://" + res.Get("data").Get("ip").String() + ":" + res.Get("data").Get("port").String()
+			rd.Set(cache, proxy, time.Minute*25)
+			break
+		}
+		if code == 409 {
+			t := time.NewTicker(time.Second * 30)
+			<-t.C
+		}
+		t := time.NewTicker(time.Second * 1)
+		<-t.C
+	}
 	return proxy
 }
 
