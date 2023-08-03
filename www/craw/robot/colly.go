@@ -32,12 +32,12 @@ func GetProxy() string {
 		return cacheProxy
 	}
 	for {
-		content, code, _ := tools.HttpRequest("https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=carter&token=ZjNKNFZlSHRQNmlhY1R0MCtpY0tKQT09&auth=1&geo=all&city=all&agreement=1&timeout=30&num=1&rtype=0",
+		content, code, _ := tools.HttpRequest("https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=yipinbao6688&token=eUkxbHhCSFZFcit1TS9XRWdxVy9mUT09&auth=0&geo=NZ&city=361574&agreement=1&timeout=20&num=1&rtype=0",
 			"GET", "", map[string]string{}, []*http.Cookie{})
 		if code == 200 {
 			res := gjson.Parse(content)
 			proxy = "http://" + res.Get("data").Get("ip").String() + ":" + res.Get("data").Get("port").String()
-			rd.Set(cache, proxy, time.Minute*25)
+			rd.Set(cache, proxy, time.Minute*15)
 			break
 		}
 		if code == 409 {
