@@ -42,6 +42,13 @@ class DbsController extends AdminController
         return $grid;
     }
 
+    public function create(Content $content)
+    {
+        return $content
+            ->header('创建标签')
+            ->description('创建标签')
+            ->body($this->form());
+    }
 
 
     /**
