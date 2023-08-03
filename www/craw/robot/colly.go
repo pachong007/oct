@@ -24,7 +24,7 @@ func GetColly() *colly.Collector {
 }
 
 func GetProxy() string {
-	content, code, _ := tools.HttpRequest("https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=yipinbao6688&token=eUkxbHhCSFZFcit1TS9XRWdxVy9mUT09&auth=0&geo=PH&city=208622&agreement=1&timeout=35&num=1&rtype=0",
+	content, code, _ := tools.HttpRequest("https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=carter&token=ZjNKNFZlSHRQNmlhY1R0MCtpY0tKQT09&auth=1&geo=all&city=all&agreement=1&timeout=15&num=1&rtype=0",
 		"GET", "", map[string]string{}, []*http.Cookie{})
 	proxy := ""
 	if code == 200 {
