@@ -70,7 +70,7 @@ class ResetPaw extends Command
             $list[] = $r;
         }
 
-        $chapters = SourceChapter::where('source',$sourceId)->where('status',0)->where('created_at','>',date('Y-m-d H:i:s',date('Y-m-d',strtotime('12 days ago'))))->get();
+        $chapters = SourceChapter::where('source',$sourceId)->where('status',0)->where('created_at','>',date('Y-m-d',strtotime('30 days ago')))->get();
         foreach ($chapters as $chapter){
             if($chapter->is_free == 1) continue;
             if($chapter->retry > 9) continue;
