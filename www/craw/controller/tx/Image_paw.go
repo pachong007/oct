@@ -23,9 +23,7 @@ func ImagePaw() {
 		return
 	}
 	defer A.Free()
-	if config.Spe.AppDebug == false {
-		A.Proxy(robot.GetProxy())
-	}
+	A.Restart("")
 
 	taskLimit := 9
 	for limit := 0; limit < taskLimit; limit++ {
@@ -110,8 +108,7 @@ func ImagePaw() {
 func browserList(A *ant.Ant, sourceImage *model.SourceImage, sourceChapter *model.SourceChapter) {
 	for tryLimit := 0; tryLimit <= 10; tryLimit++ {
 		if tryLimit == 6 {
-			A.Proxy(robot.GetProxy())
-			A.WebDriver.Refresh()
+			A.Restart(robot.GetProxy())
 			A.WebDriver.Get(sourceChapter.SourceUrl)
 		}
 		imgContain, err := A.WebDriver.FindElement(selenium.ByClassName, "comic-contain")

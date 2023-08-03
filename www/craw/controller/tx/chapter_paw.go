@@ -7,9 +7,11 @@ import (
 	"comics/robot"
 	"comics/tools/config"
 	"comics/tools/rd"
+	"encoding/json"
 	"fmt"
 	"github.com/gocolly/colly"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -34,19 +36,24 @@ func ChapterPaw() {
 			if orm.Eloquent.Where("id = ?", id).First(&sourceComic); sourceComic.Id == 0 {
 				continue
 			}
-			if sourceComic.Retry > 9 {
+			if sourceComic.Retry > 30 {
 				continue
 			}
 			sourceComic.Retry += 1
 
+			recordPick := getPick(sourceComic.Id)
 			bot.OnHTML("ol.chapter-page-all", func(e *colly.HTMLElement) {
 				e.ForEach(".works-chapter-item", func(sort int, e *colly.HTMLElement) {
-					if sort < sourceComic.ChapterPick {
-						return
-					}
 					dom := e.DOM.Find("a")
 					title, _ := dom.Attr("title")
 					url, _ := dom.Attr("href")
+					if url == "" {
+						return
+					}
+					if sliceContainsString(recordPick, url) {
+						return
+					}
+					recordPick = append(recordPick, url)
 
 					sourceChapter := new(model.SourceChapter)
 					sourceChapter.ComicId = sourceComic.Id
@@ -55,9 +62,6 @@ func ChapterPaw() {
 					sourceChapter.Title = title
 					sourceChapter.SourceUrl = "https://" + config.Spe.SourceUrl + "/" + strings.TrimLeft(url, "/")
 					sourceChapter.SourceChapterId, _ = strconv.Atoi(filepath.Base(url))
-					if url == "" || sourceChapter.SourceChapterId == 0 {
-						return
-					}
 					pay := e.DOM.Find("i.ui-icon-pay").Index()
 					if pay != -1 {
 						sourceChapter.IsFree = 1
@@ -81,6 +85,7 @@ func ChapterPaw() {
 						}
 					}
 				})
+				setPick(sourceComic.Id, recordPick)
 			})
 
 			bot.OnHTML("div.works-intro-wr", func(e *colly.HTMLElement) {
@@ -104,6 +109,10 @@ func ChapterPaw() {
 
 			err := bot.Visit(sourceComic.SourceUrl)
 			if err != nil {
+				bot = robot.GetColly()
+				if i > 5 {
+					bot.SetProxy(robot.GetProxy())
+				}
 				if i == 10 {
 					model.RecordFail(sourceComic.SourceUrl, "无法获取漫画详情 :"+sourceComic.SourceUrl, "漫画详情错误", 2)
 					rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
@@ -113,4 +122,30 @@ func ChapterPaw() {
 			}
 		}
 	}
+}
+
+func getPick(comicId int) (recordPick []string) {
+	cache := "record:comic:chapters:pick:" + strconv.Itoa(comicId)
+	cacheProxy := rd.Get(cache)
+	if cacheProxy != "" {
+		err := json.Unmarshal([]byte(cacheProxy), &recordPick)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return recordPick
+}
+
+func setPick(comicId int, recordPick []string) {
+	cache := "record:comic:chapters:pick:" + strconv.Itoa(comicId)
+	jsonData, err := json.Marshal(recordPick)
+	if err != nil {
+		panic(err)
+	}
+	rd.Set(cache, string(jsonData), time.Hour*128)
+}
+
+func sliceContainsString(slice []string, target string) bool {
+	index := sort.SearchStrings(slice, target)
+	return index < len(slice) && slice[index] == target
 }

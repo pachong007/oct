@@ -8,7 +8,6 @@ import (
 	"comics/tools/config"
 	"comics/tools/rd"
 	"fmt"
-	"github.com/beego/beego/v2/adapter/logs"
 	"github.com/tebeka/selenium"
 	"github.com/ydtg1993/ant"
 	"math"
@@ -21,9 +20,7 @@ func ImagePaw() {
 		return
 	}
 	defer A.Free()
-	if config.Spe.AppDebug == false {
-		A.Proxy(robot.GetProxy())
-	}
+	A.Restart("")
 
 	taskLimit := 12
 	for limit := 0; limit < taskLimit; limit++ {
@@ -202,25 +199,24 @@ func down(A *ant.Ant, imgs []string, dir, ext string, add int) (files []string, 
 }
 
 func browserList(A *ant.Ant, sourceImage *model.SourceImage, sourceChapter *model.SourceChapter, contentHTML string) {
-	for tryLimit := 0; tryLimit <= 3; tryLimit++ {
+	for tryLimit := 0; tryLimit <= 5; tryLimit++ {
 		var arg []interface{}
 		A.WebDriver.Refresh()
 		A.WebDriver.Get(sourceChapter.SourceUrl)
 		A.WebDriver.ExecuteScript("window.scrollTo({top: 10000000,behavior: 'smooth'});", arg)
 		imgList, err := A.WebDriver.FindElements(selenium.ByClassName, "img-box")
 		if err != nil {
-			if tryLimit > 1 {
-				if tryLimit == 3 {
-					msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %s err = %s",
-						config.Spe.SourceId,
-						sourceChapter.ComicId,
-						sourceChapter.SourceUrl,
-						err.Error())
-					model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
-					logs.Debug(sourceChapter.SourceUrl + "===================================" + contentHTML)
-					return
-				}
-				A.Proxy(robot.GetProxy())
+			if tryLimit == 5 {
+				msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %s err = %s",
+					config.Spe.SourceId,
+					sourceChapter.ComicId,
+					sourceChapter.SourceUrl,
+					err.Error())
+				model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 5)
+				return
+			}
+			if tryLimit > 2 {
+				A.Restart(robot.GetProxy())
 			}
 			continue
 		}

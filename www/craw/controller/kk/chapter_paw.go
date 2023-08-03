@@ -8,11 +8,14 @@ import (
 	"comics/tools"
 	"comics/tools/config"
 	"comics/tools/rd"
+	"encoding/json"
 	"fmt"
 	"github.com/tebeka/selenium"
 	"github.com/ydtg1993/ant"
 	"path/filepath"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -24,9 +27,7 @@ func ChapterPaw() {
 		return
 	}
 	defer A.Free()
-	if config.Spe.AppDebug == false {
-		A.Proxy(robot.GetProxy())
-	}
+	A.Restart("")
 
 	taskLimit := 12
 	for limit := 0; limit < taskLimit; limit++ {
@@ -43,7 +44,7 @@ func ChapterPaw() {
 		if orm.Eloquent.Where("id = ?", id).First(&sourceComic); sourceComic.Id == 0 {
 			continue
 		}
-		if sourceComic.Retry > 10 {
+		if sourceComic.Retry > 30 {
 			continue
 		}
 		sourceComic.Retry += 1
@@ -128,15 +129,21 @@ func ChapterPaw() {
 }
 
 func chapterList(A *ant.Ant, sourceComic *model.SourceComic, listElements []selenium.WebElement, page int) {
+	recordPick := getPick(sourceComic.Id)
 	for sort, itemElement := range listElements {
-		if sort+page*50 < sourceComic.ChapterPick {
+		title, _ := itemElement.Text()
+		if title == "" {
 			continue
 		}
+		if sliceContainsString(recordPick, title) {
+			return
+		}
+		recordPick = append(recordPick, title)
+
 		sourceChapter := new(model.SourceChapter)
 		sourceChapter.Source = 1
 		sourceChapter.ComicId = sourceComic.Id
 		sourceChapter.Sort = sort + page*50
-		title, _ := itemElement.Text()
 		sourceChapter.Title = strings.TrimSpace(title)
 		html, err := itemElement.GetAttribute("innerHTML")
 		if err == nil {
@@ -181,4 +188,31 @@ func chapterList(A *ant.Ant, sourceComic *model.SourceComic, listElements []sele
 			}
 		}
 	}
+	setPick(sourceComic.Id, recordPick)
+}
+
+func getPick(comicId int) (recordPick []string) {
+	cache := "record:comic:chapters:pick:" + strconv.Itoa(comicId)
+	cacheProxy := rd.Get(cache)
+	if cacheProxy != "" {
+		err := json.Unmarshal([]byte(cacheProxy), &recordPick)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return recordPick
+}
+
+func setPick(comicId int, recordPick []string) {
+	cache := "record:comic:chapters:pick:" + strconv.Itoa(comicId)
+	jsonData, err := json.Marshal(recordPick)
+	if err != nil {
+		panic(err)
+	}
+	rd.Set(cache, string(jsonData), time.Hour*128)
+}
+
+func sliceContainsString(slice []string, target string) bool {
+	index := sort.SearchStrings(slice, target)
+	return index < len(slice) && slice[index] == target
 }

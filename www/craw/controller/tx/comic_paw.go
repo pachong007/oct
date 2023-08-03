@@ -37,7 +37,7 @@ func cateList() (tags, pays, states map[string]int) {
 	}
 	pays = map[string]int{
 		"免费": 1,
-		//"付费": 2,
+		"付费": 2,
 	}
 	states = map[string]int{
 		"连载中": 1,
@@ -85,7 +85,7 @@ func category(tx common.Kind, limitPage int) {
 		tx.Tag.Val, tx.State.Val, tx.Pay.Val)
 
 	page := 1
-	for i := 0; i <= 30; i++ {
+	for try := 0; try <= 10; try++ {
 		bot.OnResponse(func(r *colly.Response) {
 			regexp := regexp.MustCompile(`var totalNum = "(\d+)";`)
 			params := regexp.FindStringSubmatch(string(r.Body))
@@ -110,7 +110,10 @@ func category(tx common.Kind, limitPage int) {
 		err := bot.Visit(url)
 		if err != nil {
 			bot = robot.GetColly()
-			if i == 30 {
+			if try > 5 {
+				bot.SetProxy(robot.GetProxy())
+			}
+			if try == 10 {
 				model.RecordFail(url, "无法抓取分类列表页信息 :"+url, "列表错误", 0)
 			}
 		} else {
@@ -125,7 +128,7 @@ func paw(tx common.Kind, page int) {
 	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/Comic/all/theme/%d/finish/%d/search/time/vip/%d/page/%d",
 		tx.Tag.Val, tx.State.Val, tx.Pay.Val, page)
 	bot := robot.GetColly()
-	for i := 0; i <= 30; i++ {
+	for try := 0; try <= 10; try++ {
 		bot.OnHTML("li.ret-search-item", func(e *colly.HTMLElement) {
 			if tx.State.Val == 2 {
 				insertComic(e, tx.Tag.Name, true)
@@ -137,7 +140,10 @@ func paw(tx common.Kind, page int) {
 		err := bot.Visit(url)
 		if err != nil {
 			bot = robot.GetColly()
-			if i == 30 {
+			if try > 5 {
+				bot.SetProxy(robot.GetProxy())
+			}
+			if try == 10 {
 				model.RecordFail(url, "无法抓取分类列表页信息 :"+url, "列表错误", 0)
 			}
 		} else {
