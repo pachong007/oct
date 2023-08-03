@@ -26,8 +26,7 @@ Route::group([
     $router->resource('/comic', 'Pass\ComicController');
     $router->resource('/chapter', 'Pass\ChapterController');
 
-    /*用户管理*/
-    $router->resource('/user', 'UserController');
+    $router->resource('/db', 'DbsController');
 
     /*爬虫redis任务*/
     $router->resource('/paw', 'PawController');
