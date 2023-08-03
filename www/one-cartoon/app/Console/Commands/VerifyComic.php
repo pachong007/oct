@@ -51,11 +51,6 @@ class VerifyComic extends Command
     public function handle()
     {
         $limit = 500;
-        $comicLimit = $this->comicLimit;
-
-        SourceComic::where('status', 2)
-            ->where('updated_at', '<', date('Y-m-d', strtotime('7 days ago')))
-            ->update(['status' => 0]);
         $sources = SourceComic::inRandomOrder()->where('chapter_count', '>', 0)->limit($limit)->get();
 
         $DBs = Dbs::select('name')->get();
@@ -77,12 +72,17 @@ class VerifyComic extends Command
             $mct->setConnection("mysql_${db}");
             $ct = new ComicType();
             $ct->setConnection("mysql_${db}");
+
+            $comicLimit = $this->comicLimit;
+
             foreach ($sources as $sourceComic) {
                 if($comicLimit < 0)break;
                 /*章节检查*/
-                $chapterDone = SourceChapter::join('source_image', 'source_chapter.id', '=', 'source_image.chapter_id')->where('source_image.state', 1)->count();
+                $chapterDone = SourceChapter::join('source_image', 'source_chapter.id', '=', 'source_image.chapter_id')
+                    ->where('source_image.state', 1)
+                    ->where('source_chapter.comic_id',$sourceComic->id)
+                    ->count();
                 if ($chapterDone === 0) {
-                    SourceComic::where('id', $sourceComic->id)->update(['status' => 2, 'updated_at' => date('Y-m-d H:i:s')]);
                     continue;
                 }
                 $publish = Publish::where(['database' => $db, 'comic_id' => $sourceComic->id])->first();
@@ -157,8 +157,8 @@ class VerifyComic extends Command
         $p_publish_chapter_id = [];
         foreach ($chapters as $chapter) {
             if ($chapterLimit < 0) break;
-            $chapterLimit--;
             if ($chapter->image && $chapter->image['state'] == 1) {
+                $chapterLimit--;
                 $images = $chapter->image['images'];
                 $cid = $cha->insertGetId([
                     'mid' => $mid,
@@ -186,7 +186,6 @@ class VerifyComic extends Command
                 $p_publish_chapter_id[] = $cid;
             }
         }
-        var_dump($p_chapter_id,$p_publish_chapter_id);
         return [$p_chapter_id,$p_publish_chapter_id];
     }
 }
