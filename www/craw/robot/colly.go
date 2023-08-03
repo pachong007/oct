@@ -19,10 +19,10 @@ func GetColly() *colly.Collector {
 	)
 	extensions.RandomUserAgent(bot)
 	extensions.Referer(bot)
-	proxy := GetProxy()
+	/*proxy := GetProxy()
 	if proxy != "" && config.Spe.AppDebug == false {
 		bot.SetProxy(proxy)
-	}
+	}*/
 	return bot
 }
 
