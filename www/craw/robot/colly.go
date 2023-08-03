@@ -27,7 +27,7 @@ func GetColly() *colly.Collector {
 }
 
 func GetProxy() string {
-	api := "https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=yipinbao6688&token=eUkxbHhCSFZFcit1TS9XRWdxVy9mUT09&auth=0&geo=all&city=all&agreement=1&timeout=35&num=10&rtype=0"
+	api := "https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=carter&token=ZjNKNFZlSHRQNmlhY1R0MCtpY0tKQT09&auth=1&geo=all&city=all&agreement=1&timeout=25&num=10&rtype=0"
 	var saveData []string
 	proxy := ""
 	cache := "proxy:" + config.Spe.SourceUrl
@@ -42,7 +42,7 @@ func GetProxy() string {
 			return saveData[randomIndex]
 		}
 	}
-	for {
+	for try := 0; try <= 30; try++ {
 		content, code, _ := tools.HttpRequest(api,
 			"GET", "", map[string]string{}, []*http.Cookie{})
 		if code == 200 {
