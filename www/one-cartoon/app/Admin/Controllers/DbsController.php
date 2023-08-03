@@ -59,7 +59,7 @@ class DbsController extends AdminController
     protected function form($id = '')
     {
         $form = new Form(new Dbs());
-        $form->input('name','mcc库名');
+        $form->text('name','mcc库名');
         /*配置*/
         CommonController::disableDetailConf($form);
         return $form;
