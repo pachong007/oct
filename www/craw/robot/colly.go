@@ -5,6 +5,7 @@ import (
 	"comics/tools/config"
 	"comics/tools/rd"
 	"encoding/json"
+	"fmt"
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/extensions"
 	"github.com/tidwall/gjson"
@@ -38,6 +39,7 @@ func GetProxy() string {
 		}
 		if len(saveData) > 0 {
 			randomIndex := rand.Intn(len(saveData))
+			fmt.Println(saveData[randomIndex])
 			return saveData[randomIndex]
 		}
 	}
