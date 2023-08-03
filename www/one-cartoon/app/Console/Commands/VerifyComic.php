@@ -88,7 +88,7 @@ class VerifyComic extends Command
                 $publish = Publish::where(['database' => $db, 'comic_id' => $sourceComic->id])->first();
                 if (!$publish) {
                     $comicLimit--;
-                    $publishId = $comic->insertGetId([
+                    $mccComicId = $comic->insertGetId([
                         'name' => $sourceComic->title,
                         'yname' => '',
                         'pic' => rtrim(env("IMG_DOMAIN"), "/") . "/" . $sourceComic->cover,
@@ -109,11 +109,11 @@ class VerifyComic extends Command
                     $tag4 = $mct->where('fid', 4)->inRandomOrder()->first();
                     $tag5 = $mct->where('fid', 5)->inRandomOrder()->first();
                     $typeInsert = [
-                        ['mid' => $publishId, 'tid' => $tag->id],
-                        ['mid' => $publishId, 'tid' => $tag2->id],
-                        ['mid' => $publishId, 'tid' => $tag3->id],
-                        ['mid' => $publishId, 'tid' => $tag4->id],
-                        ['mid' => $publishId, 'tid' => $tag5->id],
+                        ['mid' => $mccComicId, 'tid' => $tag->id],
+                        ['mid' => $mccComicId, 'tid' => $tag2->id],
+                        ['mid' => $mccComicId, 'tid' => $tag3->id],
+                        ['mid' => $mccComicId, 'tid' => $tag4->id],
+                        ['mid' => $mccComicId, 'tid' => $tag5->id],
                     ];
                     $ct->insert($typeInsert);
 
@@ -122,7 +122,7 @@ class VerifyComic extends Command
                         'chapter_id' => json_encode([]),
                         'source' => $sourceComic->source,
                         'database' => $db,
-                        'publish_id' => $publishId,
+                        'publish_id' => $mccComicId,
                         'publish_chapter_id' => json_encode([])
                     ]);
                     $publish = Publish::where(['id' => $pid])->first();
@@ -139,29 +139,24 @@ class VerifyComic extends Command
         }
     }
 
-    private function insertChapter($db, $comicId, $mid, $chapterIds)
+    private function insertChapter($db, $comicId, $mccComicId, $chapterIds)
     {
         $chapterLimit = $this->chapterLimit;
-        if (!empty($chapterIds)) {
-            $chapters = SourceChapter::where('comic_id', $comicId)->whereNotIn('id', $chapterIds)
-                ->get();
-        } else {
-            $chapters = SourceChapter::where('comic_id', $comicId)->get();
-        }
+        $chapters = SourceChapter::where('comic_id', $comicId)->get();
         $cha = new Chapter();
         $cha->setConnection("mysql_${db}");
         $img = new Image();
         $img->setConnection("mysql_${db}");
 
-        $p_chapter_id = [];
-        $p_publish_chapter_id = [];
+        $mccChapterIds = [];
         foreach ($chapters as $chapter) {
-            if ($chapterLimit < 0) break;
+            if(in_array($chapter->id,$chapterIds))continue;
             if ($chapter->image && $chapter->image['state'] == 1) {
                 $chapterLimit--;
+                if($chapterLimit<0)break;
                 $images = $chapter->image['images'];
                 $cid = $cha->insertGetId([
-                    'mid' => $mid,
+                    'mid' => $mccComicId,
                     'xid' => $chapter->sort,
                     'name' => $chapter->title,
                     'jxurl' => $chapter->source_url,
@@ -173,7 +168,7 @@ class VerifyComic extends Command
                 foreach ($images as $k => $image) {
                     $insertImages[] = [
                         'cid' => $cid,
-                        'mid' => $mid,
+                        'mid' => $mccComicId,
                         'img' => rtrim(env("IMG_DOMAIN"), "/") . "/" . $image,
                         'xid' => $k,
                         'md5' => ''
@@ -182,10 +177,10 @@ class VerifyComic extends Command
                 if (!empty($insertImages)) {
                     $img->insert($insertImages);
                 }
-                $p_chapter_id[] = $chapter->id;
-                $p_publish_chapter_id[] = $cid;
+                $mccChapterIds[] = $cid;
+                $chapterIds[] = $chapter->id;
             }
         }
-        return [$p_chapter_id,$p_publish_chapter_id];
+        return [$chapterIds,$mccChapterIds];
     }
 }
