@@ -5,6 +5,7 @@ import (
 	"comics/tools/config"
 	"comics/tools/rd"
 	"encoding/json"
+	"fmt"
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/extensions"
 	"github.com/tidwall/gjson"
@@ -46,6 +47,7 @@ func GetProxy() string {
 			"GET", "", map[string]string{}, []*http.Cookie{})
 		if code == 200 {
 			res := gjson.Parse(content)
+			fmt.Println(res)
 			for _, d := range res.Get("data").Array() {
 				saveData = append(saveData, "http://"+d.Get("data").Get("ip").String()+":"+d.Get("data").Get("port").String())
 			}
