@@ -88,7 +88,6 @@ class VerifyComic extends Command
                 $publish = Publish::where(['database' => $db, 'comic_id' => $sourceComic->id])->first();
                 if (!$publish) {
                     $comicLimit--;
-
                     $publishId = $comic->insertGetId([
                         'name' => $sourceComic->title,
                         'yname' => '',
@@ -151,11 +150,14 @@ class VerifyComic extends Command
         }
         $cha = new Chapter();
         $cha->setConnection("mysql_${db}");
+        $img = new Image();
+        $img->setConnection("mysql_${db}");
 
         $p_chapter_id = [];
         $p_publish_chapter_id = [];
         foreach ($chapters as $chapter) {
             if ($chapterLimit < 0) break;
+            $chapterLimit--;
             if ($chapter->image && $chapter->image['state'] == 1) {
                 $images = $chapter->image['images'];
                 $cid = $cha->insertGetId([
@@ -178,15 +180,13 @@ class VerifyComic extends Command
                     ];
                 }
                 if (!empty($insertImages)) {
-                    $img = new Image();
-                    $img->setConnection("mysql_${db}");
                     $img->insert($insertImages);
                 }
                 $p_chapter_id[] = $chapter->id;
                 $p_publish_chapter_id[] = $cid;
-                $chapterLimit--;
             }
         }
+        var_dump($p_chapter_id,$p_publish_chapter_id);
         return [$p_chapter_id,$p_publish_chapter_id];
     }
 }
