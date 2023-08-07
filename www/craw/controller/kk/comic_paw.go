@@ -155,17 +155,13 @@ func paw(kk common.Kind, sort, page int) {
 			}
 		}
 		for _, comicElement := range comicList {
-			if kk.State.Val == 1 {
-				insertComic(comicElement, kk.Tag.Name, kk.Region.Name, false)
-			} else {
-				insertComic(comicElement, kk.Tag.Name, kk.Region.Name, true)
-			}
+			insertComic(comicElement, kk.Tag.Name, kk.Region.Name, kk.State.Val)
 		}
 		break
 	}
 }
 
-func insertComic(e selenium.WebElement, category string, region string, final bool) {
+func insertComic(e selenium.WebElement, category string, region string, final int) {
 	sourceComic := new(model.SourceComic)
 	itemLink, err := e.FindElement(selenium.ByClassName, "itemLink")
 	if err != nil {
@@ -182,7 +178,7 @@ func insertComic(e selenium.WebElement, category string, region string, final bo
 	sourceComic.Label = model.Label{}
 	sourceComic.SourceUrl = url
 	sourceComic.IsFinish = 0
-	if final == true {
+	if final == 2 {
 		sourceComic.IsFinish = 1
 	}
 	itemTitle, err := e.FindElement(selenium.ByClassName, "itemTitle")

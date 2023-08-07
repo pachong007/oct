@@ -44,7 +44,7 @@ func GetProxy() string {
 		if code == 200 {
 			res := gjson.Parse(content)
 			for _, d := range res.Get("data").Array() {
-				saveData = append(saveData, "http://"+d.Get("d_ip").String()+":"+d.Get("port").String())
+				saveData = append(saveData, "http://"+d.Get("ip").String()+":"+d.Get("port").String())
 			}
 			jsonData, err := json.Marshal(saveData)
 			if err != nil {

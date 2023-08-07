@@ -130,11 +130,7 @@ func paw(tx common.Kind, page int) {
 	bot := robot.GetColly()
 	for try := 0; try <= 10; try++ {
 		bot.OnHTML("li.ret-search-item", func(e *colly.HTMLElement) {
-			if tx.State.Val == 2 {
-				insertComic(e, tx.Tag.Name, true)
-			} else {
-				insertComic(e, tx.Tag.Name, false)
-			}
+			insertComic(e, tx.Tag.Name, tx.State.Val)
 		})
 
 		err := bot.Visit(url)
@@ -152,7 +148,7 @@ func paw(tx common.Kind, page int) {
 	}
 }
 
-func insertComic(e *colly.HTMLElement, category string, final bool) {
+func insertComic(e *colly.HTMLElement, category string, final int) {
 	info := e.DOM.Find(".ret-works-info")
 	url, _ := info.Find(".ret-works-title>a").Attr("href")
 	id := tools.FindStringNumber(url)
@@ -181,7 +177,7 @@ func insertComic(e *colly.HTMLElement, category string, final bool) {
 	sourceComic.LastChapterUpdateAt = time.Now().AddDate(-1, 0, 0)
 	sourceComic.Category = category
 	sourceComic.Popularity = popularity
-	if final == true {
+	if final == 2 {
 		sourceComic.IsFinish = 1
 	}
 	var cookies map[string]string
