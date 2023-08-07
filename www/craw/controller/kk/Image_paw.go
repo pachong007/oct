@@ -15,7 +15,7 @@ import (
 )
 
 func ImagePaw() {
-	A := ant.Get([]int{-1, -2, -3})
+	A := ant.Get([]int{-1, -2, -3, -4})
 	if A == nil {
 		return
 	}

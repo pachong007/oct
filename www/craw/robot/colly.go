@@ -23,7 +23,7 @@ func GetColly() *colly.Collector {
 }
 
 func GetProxy() string {
-	api := "https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=carter&token=ZjNKNFZlSHRQNmlhY1R0MCtpY0tKQT09&auth=1&geo=all&city=all&agreement=1&timeout=25&num=10&rtype=0"
+	api := config.Spe.ProxyUrl
 	var saveData []string
 	proxy := ""
 	cache := "proxy:" + config.Spe.SourceUrl

@@ -13,33 +13,31 @@ import (
 )
 
 func TaskComic(source *SourceStrategy) {
-	t := time.NewTicker(time.Hour * 12)
-	defer t.Stop()
+	t := time.NewTicker(time.Minute * 30)
+	tu := time.NewTicker(time.Hour * 12)
+	tr := time.NewTicker(time.Hour * 120)
+	defer tu.Stop()
+	defer tr.Stop()
 	rd.RPush(common.TaskStepRecord, fmt.Sprintf("漫画-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
 	source.ComicPaw()
-	source.ComicPaw()
 	for {
-		<-t.C
-		rd.Delete(common.TaskStepRecord)
-		rd.RPush(common.TaskStepRecord, fmt.Sprintf("漫画更新-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
-		source.ComicUpdate()
-	}
-}
-
-func TaskReComic(source *SourceStrategy) {
-	t := time.NewTicker(time.Hour * 360)
-	defer t.Stop()
-
-	for {
-		<-t.C
-		source.ComicPaw()
+		select {
+		case <-tu.C:
+			rd.Delete(common.TaskStepRecord)
+			rd.RPush(common.TaskStepRecord, fmt.Sprintf("漫画更新-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
+			source.ComicUpdate()
+		case <-tr.C:
+			source.ComicPaw()
+		default:
+			<-t.C
+		}
 	}
 }
 
 func TaskChapter(source *SourceStrategy) {
 	t := time.NewTicker(time.Minute * 3)
 	defer t.Stop()
-	threads := 2
+	threads := 3
 	for {
 		<-t.C
 		wg := sync.WaitGroup{}
@@ -56,7 +54,7 @@ func TaskChapter(source *SourceStrategy) {
 }
 
 func TaskChapterUpdate() {
-	t := time.NewTicker(time.Hour * 6)
+	t := time.NewTicker(time.Hour * 3)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -71,7 +69,7 @@ func TaskChapterUpdate() {
 		limit := 1000
 
 		var sourceComics []model.SourceComic
-		orm.Eloquent.Offset(page*limit).Limit(limit).Where("source = ? and is_finish = 0", config.Spe.SourceId).Find(&sourceComics)
+		orm.Eloquent.Offset(page*limit).Limit(limit).Where("source = ?", config.Spe.SourceId).Find(&sourceComics)
 		if len(sourceComics) <= 0 {
 			rd.Set(common.SourceComicRenewPick, "0", time.Hour*9999)
 			continue
@@ -86,8 +84,8 @@ func TaskChapterUpdate() {
 
 func TaskImage(source *SourceStrategy) {
 	for {
-		timestamp0 := time.Now()
-		threads := 6
+		timeAt := time.Now()
+		threads := 4
 		wg := sync.WaitGroup{}
 		wg.Add(threads)
 		for i := 0; i < threads; i++ {
@@ -109,7 +107,7 @@ func TaskImage(source *SourceStrategy) {
 		}
 		wg.Wait()
 
-		if time.Now().Sub(timestamp0) < 5*time.Second {
+		if time.Now().Sub(timeAt) < 10*time.Second {
 			t := time.NewTicker(time.Minute * 15)
 			<-t.C
 		}

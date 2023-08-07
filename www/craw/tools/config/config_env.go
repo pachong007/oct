@@ -33,6 +33,7 @@ type Specification struct {
 	RedisPass string `envconfig:"REDIS_PASS"`
 	RedisDb   int    `envconfig:"REDIS_DB"`
 
+	ProxyUrl     string `envconfig:"PROXY_URL"`
 	UserAgent    string `envconfig:"USER_AGENT"`
 	SourceId     int    `envconfig:"SOURCE_ID"`
 	SourceUrl    string `envconfig:"SOURCE_URL"`

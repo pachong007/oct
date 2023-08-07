@@ -17,7 +17,7 @@ func SourceOperate(source string) *SourceStrategy {
 	switch source {
 	case "www.kuaikanmanhua.com":
 		config.Spe.SourceId = 1
-		config.Spe.Maxthreads = 9
+		config.Spe.Maxthreads = 7
 		return &SourceStrategy{
 			ComicPaw:    kk.ComicPaw,
 			ComicUpdate: kk.ComicUpdate,
@@ -26,7 +26,7 @@ func SourceOperate(source string) *SourceStrategy {
 		}
 	case "ac.qq.com":
 		config.Spe.SourceId = 2
-		config.Spe.Maxthreads = 3
+		config.Spe.Maxthreads = 4
 		return &SourceStrategy{
 			ComicPaw:    tx.ComicPaw,
 			ComicUpdate: tx.ComicUpdate,

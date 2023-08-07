@@ -22,7 +22,7 @@ import (
 )
 
 func ChapterPaw() {
-	A := ant.Get([]int{2, 3})
+	A := ant.Get([]int{2, 3, 4})
 	if A == nil {
 		return
 	}
