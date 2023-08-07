@@ -41,16 +41,27 @@ func ImagePaw() {
 		}
 
 		A.WebDriver.Get(sourceChapter.SourceUrl)
+		if sourceChapter.Retry > 100 {
+			continue
+		}
 		sourceChapter.Retry += 1
 		orm.Eloquent.Save(sourceChapter)
-		elem, err := A.WebDriver.FindElement(selenium.ByClassName, "db")
-		if err == nil {
-			info, err := elem.Text()
-			if err == nil {
-				if regexp.MustCompile("该漫画不存在或章节已被删除").MatchString(info) {
-					continue
-				}
-			}
+		contentBox, err := A.WebDriver.FindElement(selenium.ByTagName, "body")
+		if err != nil {
+			continue
+		}
+		contentHTML, err := contentBox.GetAttribute("innerHTML")
+		if err != nil {
+			continue
+		}
+		reg := regexp.MustCompile(`该漫画不存在或章节已被删除`)
+		if reg.MatchString(contentHTML) == false {
+			sourceChapter.Retry += 100
+			continue
+		}
+		reg = regexp.MustCompile(`id="comicContain"`)
+		if reg.MatchString(contentHTML) == false {
+			continue
 		}
 
 		sourceImage := new(model.SourceImage)

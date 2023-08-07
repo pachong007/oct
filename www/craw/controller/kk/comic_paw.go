@@ -104,7 +104,7 @@ func category(kk common.Kind, sort, limitPage int) {
 
 	bot := robot.GetColly()
 	totalPage := 1
-	for try := 0; try <= 10; try++ {
+	for try := 0; try <= 5; try++ {
 		bot.OnHTML(".navigation", func(e *colly.HTMLElement) {
 			last := e.DOM.Find(".itemBten").Last()
 			totalPage = tools.FindStringNumber(last.Text())
@@ -113,10 +113,10 @@ func category(kk common.Kind, sort, limitPage int) {
 		err := bot.Visit(url)
 		if err != nil {
 			bot = robot.GetColly()
-			if try > 5 {
+			if try > 1 {
 				bot.SetProxy(robot.GetProxy())
 			}
-			if try == 10 {
+			if try == 5 {
 				model.RecordFail(url, "无法抓取分类列表页信息 :"+url, "列表错误", 0)
 				return
 			}
@@ -142,14 +142,14 @@ func paw(kk common.Kind, sort, page int) {
 	}
 	defer A.Free()
 	A.Restart("")
-	for try := 0; try <= 7; try++ {
+	for try := 0; try <= 5; try++ {
 		if try > 2 {
 			A.Restart(robot.GetProxy())
 		}
 		A.WebDriver.Get(url)
 		comicList, err := A.WebDriver.FindElements(selenium.ByClassName, "ItemSpecial")
 		if err == nil {
-			if try == 7 {
+			if try == 5 {
 				model.RecordFail(url, "无法抓取分类列表页信息 :"+url, "列表错误", 0)
 				return
 			}

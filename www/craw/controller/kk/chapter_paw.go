@@ -44,7 +44,7 @@ func ChapterPaw() {
 		if orm.Eloquent.Where("id = ?", id).First(&sourceComic); sourceComic.Id == 0 {
 			continue
 		}
-		if sourceComic.Retry > 30 {
+		if sourceComic.Retry > 100 {
 			continue
 		}
 		sourceComic.Retry += 1
@@ -61,6 +61,11 @@ func ChapterPaw() {
 		}
 		reg := regexp.MustCompile(`class="TopicBox"`)
 		if reg.MatchString(contentHTML) == false {
+			continue
+		}
+		reg = regexp.MustCompile(`class="lowershelf"`)
+		if reg.MatchString(contentHTML) == true {
+			sourceComic.Retry += 100
 			continue
 		}
 		heatDom, err := A.WebDriver.FindElement(selenium.ByClassName, "heat")
