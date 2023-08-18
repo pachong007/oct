@@ -36,7 +36,7 @@ func ChapterPaw() {
 			if orm.Eloquent.Where("id = ?", id).First(&sourceComic); sourceComic.Id == 0 {
 				continue
 			}
-			if sourceComic.Retry > 30 {
+			if sourceComic.Retry > 100 {
 				continue
 			}
 			sourceComic.Retry += 1
@@ -50,10 +50,11 @@ func ChapterPaw() {
 					if url == "" {
 						return
 					}
-					if sliceContainsString(recordPick, url) {
+					aimId, _ := strconv.Atoi(filepath.Base(url))
+					if sliceContainsString(recordPick, strconv.Itoa(aimId)) {
 						return
 					}
-					recordPick = append(recordPick, url)
+					recordPick = append(recordPick, strconv.Itoa(aimId))
 
 					sourceChapter := new(model.SourceChapter)
 					sourceChapter.ComicId = sourceComic.Id
@@ -61,7 +62,7 @@ func ChapterPaw() {
 					sourceChapter.Sort = sort
 					sourceChapter.Title = title
 					sourceChapter.SourceUrl = "https://" + config.Spe.SourceUrl + "/" + strings.TrimLeft(url, "/")
-					sourceChapter.SourceChapterId, _ = strconv.Atoi(filepath.Base(url))
+					sourceChapter.SourceChapterId = aimId
 					pay := e.DOM.Find("i.ui-icon-pay").Index()
 					if pay != -1 {
 						sourceChapter.IsFree = 1

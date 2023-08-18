@@ -15,7 +15,7 @@ import (
 func TaskComic(source *SourceStrategy) {
 	t := time.NewTicker(time.Minute * 30)
 	tu := time.NewTicker(time.Hour * 12)
-	tr := time.NewTicker(time.Hour * 120)
+	tr := time.NewTicker(time.Hour * 96)
 	defer tu.Stop()
 	defer tr.Stop()
 	rd.RPush(common.TaskStepRecord, fmt.Sprintf("漫画-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
@@ -69,7 +69,9 @@ func TaskChapterUpdate() {
 		limit := 1000
 
 		var sourceComics []model.SourceComic
-		orm.Eloquent.Offset(page*limit).Limit(limit).Where("source = ?", config.Spe.SourceId).Find(&sourceComics)
+		orm.Eloquent.Offset(page*limit).Limit(limit).Where("source = ?", config.Spe.SourceId).
+			Order("is_finish asc").Find(&sourceComics)
+
 		if len(sourceComics) <= 0 {
 			rd.Set(common.SourceComicRenewPick, "0", time.Hour*9999)
 			continue

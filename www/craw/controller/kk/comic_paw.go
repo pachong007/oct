@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"github.com/gocolly/colly"
 	"github.com/tebeka/selenium"
-	"github.com/ydtg1993/ant"
 	"path/filepath"
 	"strings"
 	"time"
@@ -155,7 +154,8 @@ func paw(kk common.Kind, sort, page int) {
 			}
 		}
 		for _, comicElement := range comicList {
-			insertComic(comicElement, kk.Tag.Name, kk.Region.Name, kk.State.Val)
+			state, _ := kk.State.Val.(int)
+			insertComic(comicElement, kk.Tag.Name, kk.Region.Name, state)
 		}
 		break
 	}

@@ -8,14 +8,14 @@ import (
 	"comics/tools/config"
 	"comics/tools/rd"
 	"fmt"
+	"github.com/shaoerlele/spider"
 	"github.com/tebeka/selenium"
-	"github.com/ydtg1993/ant"
 	"math"
 	"regexp"
 )
 
 func ImagePaw() {
-	A := ant.Get([]int{-1, -2, -3, -4})
+	A := ant.Get([]int{-1, -2})
 	if A == nil {
 		return
 	}

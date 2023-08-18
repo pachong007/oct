@@ -37,7 +37,7 @@ func cateList() (tags, pays, states map[string]int) {
 	}
 	pays = map[string]int{
 		"免费": 1,
-		"付费": 2,
+		//"付费": 2,
 	}
 	states = map[string]int{
 		"连载中": 1,
@@ -130,7 +130,8 @@ func paw(tx common.Kind, page int) {
 	bot := robot.GetColly()
 	for try := 0; try <= 5; try++ {
 		bot.OnHTML("li.ret-search-item", func(e *colly.HTMLElement) {
-			insertComic(e, tx.Tag.Name, tx.State.Val)
+			state, _ := tx.State.Val.(int)
+			insertComic(e, tx.Tag.Name, state)
 		})
 
 		err := bot.Visit(url)

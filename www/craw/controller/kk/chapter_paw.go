@@ -10,8 +10,8 @@ import (
 	"comics/tools/rd"
 	"encoding/json"
 	"fmt"
+	"github.com/shaoerlele/spider"
 	"github.com/tebeka/selenium"
-	"github.com/ydtg1993/ant"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -22,7 +22,7 @@ import (
 )
 
 func ChapterPaw() {
-	A := ant.Get([]int{2, 3, 4})
+	A := ant.Get([]int{2})
 	if A == nil {
 		return
 	}

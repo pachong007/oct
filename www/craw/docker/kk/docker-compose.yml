@@ -1,7 +1,7 @@
 version: '3'
 services:
   pod:
-    build: ./../linux
+    image: allonvendia/scrapy.1.1.4
     container_name: "kk"
     restart: always
     volumes:
