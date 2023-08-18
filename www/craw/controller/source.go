@@ -2,7 +2,6 @@ package controller
 
 import (
 	"comics/controller/kk"
-	"comics/controller/mhg"
 	"comics/controller/tx"
 	"comics/tools/config"
 )
