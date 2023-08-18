@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"github.com/shaoerlele/spider"
 )
 
 func cateList() (tags, regions, pays, states map[string]int) {

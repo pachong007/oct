@@ -2,7 +2,7 @@ package common
 
 type Kv struct {
 	Name string
-	Val  int
+	Val  interface{}
 }
 type Kind struct {
 	Tag    Kv
