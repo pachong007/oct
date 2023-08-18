@@ -43,6 +43,7 @@ func cateList() (tags, pays, states map[string]int) {
 		"连载中": 1,
 		"已完结": 2,
 	}
+
 	return tags, pays, states
 }
 func ComicPaw() {

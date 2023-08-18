@@ -21,7 +21,6 @@ func ImagePaw() {
 	}
 	defer A.Free()
 	A.Restart("")
-
 	taskLimit := 12
 	for limit := 0; limit < taskLimit; limit++ {
 		common.StopSignal("图片任务挂起")

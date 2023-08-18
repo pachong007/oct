@@ -29,7 +29,6 @@ func ChapterPaw() {
 				return
 			}
 		}
-
 		for i := 0; i <= 10; i++ {
 			bot := robot.GetColly()
 			sourceComic := new(model.SourceComic)

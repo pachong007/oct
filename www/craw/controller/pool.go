@@ -87,7 +87,7 @@ func TaskChapterUpdate() {
 func TaskImage(source *SourceStrategy) {
 	for {
 		timeAt := time.Now()
-		threads := 4
+		threads := 2
 		wg := sync.WaitGroup{}
 		wg.Add(threads)
 		for i := 0; i < threads; i++ {
@@ -108,7 +108,6 @@ func TaskImage(source *SourceStrategy) {
 			}()
 		}
 		wg.Wait()
-
 		if time.Now().Sub(timeAt) < 10*time.Second {
 			t := time.NewTicker(time.Minute * 15)
 			<-t.C
