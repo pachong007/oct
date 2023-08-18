@@ -8,7 +8,7 @@ import (
 	"comics/tools/database"
 	"comics/tools/log"
 	"comics/tools/rd"
-	"github.com/ydtg1993/ant"
+	"github.com/shaoerlele/spider"
 	"os"
 	"time"
 )
