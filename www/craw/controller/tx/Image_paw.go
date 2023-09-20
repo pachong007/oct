@@ -54,7 +54,7 @@ func ImagePaw() {
 			continue
 		}
 		reg := regexp.MustCompile(`该漫画不存在或章节已被删除`)
-		if reg.MatchString(contentHTML) == false {
+		if reg.MatchString(contentHTML) {
 			sourceChapter.Retry += 100
 			continue
 		}
