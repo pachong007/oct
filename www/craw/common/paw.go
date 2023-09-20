@@ -118,7 +118,7 @@ func DownFile(sUrl, filepath, fileName, proxy string, cookies map[string]string)
 			return ""
 		}
 		if aErr != nil {
-			logs.Warning("保存本地文件失败", sUrl, err.Error())
+			logs.Warning("保存本地文件失败", sUrl, aErr.Error())
 			return ""
 		}
 		if resp.ContentLength > 0 && resp.ContentLength != aw {
